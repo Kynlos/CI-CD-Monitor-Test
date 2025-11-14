@@ -159,6 +159,10 @@ jobs:
           
           if ! git diff --staged --quiet; then
             git commit -m "docs: Auto-update documentation, changelog, and wiki mapping [skip ci]"
+            
+            # Pull and rebase in case of conflicts
+            git pull --rebase origin main || true
+            
             git push
           else
             echo "No documentation changes to commit"
