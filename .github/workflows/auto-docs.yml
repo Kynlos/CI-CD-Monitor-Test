@@ -78,16 +78,16 @@ jobs:
       - name: Commit updated docs
         if: github.event_name == 'push'
         run: |
-          if [ -f "API-DOCS.md" ]; then
+          if [ -d "docs" ]; then
             git config --local user.email "github-actions[bot]@users.noreply.github.com"
             git config --local user.name "github-actions[bot]"
-            git add API-DOCS.md
+            git add docs/
             if ! git diff --staged --quiet; then
-              git commit -m "docs: Auto-update API documentation [skip ci]"
+              git commit -m "docs: Auto-update documentation [skip ci]"
               git push
             else
               echo "No documentation changes to commit"
             fi
           else
-            echo "No API-DOCS.md generated"
+            echo "No docs folder generated"
           fi

@@ -152,6 +152,31 @@ def main():
     print(documentation)
     print("="*80)
     
+    # Create docs folder if it doesn't exist
+    docs_dir = Path('docs')
+    docs_dir.mkdir(exist_ok=True)
+    
+    # Save individual documentation files
+    doc_files_created = []
+    for file_path in code_files:
+        if file_path in files_data:
+            doc_filename = Path(file_path).stem + '.md'
+            doc_path = docs_dir / doc_filename
+            
+            # Generate doc for this specific file
+            file_doc = generate_documentation(
+                f"## {Path(file_path).name}\n```typescript\n{files_data[file_path]}\n```",
+                [file_path]
+            )
+            
+            with open(doc_path, 'w') as f:
+                f.write(f"# {Path(file_path).name} Documentation\n\n")
+                f.write(f"*Auto-generated from {file_path}*\n\n")
+                f.write(file_doc)
+            
+            doc_files_created.append(str(doc_path))
+            print(f"  Created: {doc_path}")
+    
     # Save for PR comment
     pr_comment = f"""## 🤖 Auto-Generated Documentation
 
@@ -160,6 +185,9 @@ def main():
 {documentation}
 
 ---
+
+**Documentation files created:**
+{chr(10).join(f'- `{Path(f).name}`' for f in doc_files_created)}
 
 **Token Usage:**
 - Total tokens: {stats['tokens']:,}
@@ -171,15 +199,9 @@ def main():
     with open('doc_output.md', 'w') as f:
         f.write(pr_comment)
     
-    # Update API-DOCS.md
-    with open('API-DOCS.md', 'w') as f:
-        f.write(f"# API Documentation\n\n")
-        f.write(f"*Last updated: {Path('changed_files.txt').stat().st_mtime}*\n\n")
-        f.write(documentation)
-    
     print("\nDONE:")
     print("  - doc_output.md (for PR comment)")
-    print("  - API-DOCS.md (for commit)")
+    print(f"  - {len(doc_files_created)} files in docs/ folder")
 
 if __name__ == '__main__':
     main()
