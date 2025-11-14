@@ -1,0 +1,7 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-11-14T00:00:00",
+  "description": "Persistent mapping of source files to Wiki pages. DO NOT DELETE - used by wiki-manager.py to ensure consistency.",
+  "file_to_page": {},
+  "page_metadata": {}
+}

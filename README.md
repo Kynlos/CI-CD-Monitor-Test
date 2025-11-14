@@ -35,6 +35,15 @@ GitHub Actions workflow with intelligent code analysis and documentation generat
 - Action items for reviewers
 - Documentation links
 
+### 📚 6. Intelligent Wiki Routing (NEW!)
+- **Automatically routes docs to GitHub Wiki pages**
+- **LLM-powered smart categorization** - Decides best wiki page for each file
+- **Persistent mapping** - Never forgets where things go (`.github/wiki-mapping.json`)
+- **Reads existing pages** - Makes intelligent decisions based on current wiki structure
+- **Consistency guaranteed** - Same files always go to same pages
+- **Domain grouping** - Related files organized together logically
+- **Auto-verification** - Checks mapping consistency on every run
+
 ## Setup for https://github.com/Kynlos/CI-CD-Monitor-Test
 
 ### 1. Add GitHub Secret
@@ -73,7 +82,9 @@ git push
 1. **Detects changed files** - Only processes .ts/.js/.py files that changed
 2. **Reads file contents** - Gets the full code
 3. **Calls Groq API** - Generates documentation
-4. **Commits docs** - Updates `API-DOCS.md` automatically
+4. **Routes to Wiki** - Smart wiki-manager.py decides which wiki page for each file
+5. **Updates Wiki** - Pushes to GitHub Wiki automatically
+6. **Commits docs** - Updates `API-DOCS.md`, `CHANGELOG.md`, and wiki mapping
 
 ### On Every Pull Request:
 
@@ -233,8 +244,11 @@ Settings → Secrets and variables → Actions → New repository secret
 
 - `.github/workflows/auto-docs.yml` - GitHub Actions workflow
 - `.github/scripts/generate-docs.py` - Documentation generator
+- `.github/scripts/wiki-manager.py` - Intelligent wiki routing system
+- `.github/wiki-mapping.json` - Persistent file-to-wiki-page mapping
 - `API-DOCS.md` - Auto-generated documentation (committed)
 - `doc_output.md` - PR comment content (not committed)
+- `wiki_summary.md` - Wiki organization summary (generated on each run)
 
 ## Cost Analysis
 

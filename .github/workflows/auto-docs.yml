@@ -97,7 +97,46 @@ jobs:
               });
             }
       
-      - name: Commit updated docs and changelog
+      - name: Route docs to Wiki
+        if: github.event_name == 'push'
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python .github/scripts/wiki-manager.py
+      
+      - name: Checkout Wiki repository
+        if: github.event_name == 'push'
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Update Wiki pages
+        if: github.event_name == 'push'
+        run: |
+          if [ -d "wiki_updates" ]; then
+            cp -r wiki_updates/* wiki/ || true
+            
+            cd wiki
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            
+            git add .
+            
+            if ! git diff --staged --quiet; then
+              git commit -m "docs: Auto-update wiki from code changes [skip ci]"
+              git push
+              echo "✓ Wiki updated successfully"
+            else
+              echo "ℹ️  No wiki changes to commit"
+            fi
+          else
+            echo "ℹ️  No wiki updates to push"
+          fi
+      
+      - name: Commit updated docs, changelog, and wiki mapping
         if: github.event_name == 'push'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -105,9 +144,10 @@ jobs:
           
           [ -d "docs" ] && git add docs/
           [ -f "CHANGELOG.md" ] && git add CHANGELOG.md
+          [ -f ".github/wiki-mapping.json" ] && git add .github/wiki-mapping.json
           
           if ! git diff --staged --quiet; then
-            git commit -m "docs: Auto-update documentation and changelog [skip ci]"
+            git commit -m "docs: Auto-update documentation, changelog, and wiki mapping [skip ci]"
             git push
           else
             echo "No documentation changes to commit"
