@@ -417,7 +417,7 @@ I'll wait for your confirmation before making changes."""
 {chr(10).join(f'- `{Path(f).name}`' for f in files_modified)}
 
 ### Commit
-[{commit_hash}](../../commit/{commit_hash})
+[{commit_hash[:7]}](../commit/{commit_hash})
 
 ### What Changed
 {llm_output.split('CHANGES:')[1] if 'CHANGES:' in llm_output else 'See commit for details'}
