@@ -550,8 +550,5 @@ def generate_smart_pr_comment(code_files, doc_files, breaking_changes, impacts, 
     
     return comment
 
-def main():
-    main()
-
 if __name__ == '__main__':
     main()
