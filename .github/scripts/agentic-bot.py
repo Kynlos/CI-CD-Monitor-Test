@@ -228,6 +228,16 @@ def main():
     print(f"Comment from @{COMMENT_USER}:")
     print(f"  {COMMENT_BODY[:200]}")
     
+    # Check for [auto] prefix
+    if not COMMENT_BODY.strip().lower().startswith('[auto]'):
+        print("\n⏭️  No [auto] prefix, skipping")
+        sys.exit(0)
+    
+    # Remove [auto] prefix
+    actual_comment = re.sub(r'^\[auto\]\s*', '', COMMENT_BODY.strip(), flags=re.IGNORECASE)
+    print(f"\n✓ [auto] prefix detected")
+    print(f"   Request: {actual_comment[:100]}")
+    
     # Check authorization
     if not is_authorized(COMMENT_USER):
         print(f"\n⚠️  User @{COMMENT_USER} not authorized")
@@ -249,7 +259,7 @@ If you'd like to suggest changes, please comment your suggestions and the author
     
     # Classify intent
     print("\nClassifying intent...")
-    intent = classify_intent(COMMENT_BODY)
+    intent = classify_intent(actual_comment)
     
     print(f"  Category: {intent['category']}")
     print(f"  Confidence: {intent.get('confidence', 0):.2f}")
