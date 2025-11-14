@@ -108,13 +108,15 @@ jobs:
       - name: Checkout Wiki repository
         if: github.event_name == 'push'
         uses: actions/checkout@v3
+        continue-on-error: true
+        id: checkout_wiki
         with:
           repository: ${{ github.repository }}.wiki
           path: wiki
           token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Update Wiki pages
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && steps.checkout_wiki.outcome == 'success'
         run: |
           if [ -d "wiki_updates" ]; then
             cp -r wiki_updates/* wiki/ || true
@@ -135,6 +137,15 @@ jobs:
           else
             echo "ℹ️  No wiki updates to push"
           fi
+      
+      - name: Wiki not initialized
+        if: github.event_name == 'push' && steps.checkout_wiki.outcome == 'failure'
+        run: |
+          echo "⚠️  GitHub Wiki not initialized yet"
+          echo "To enable wiki updates:"
+          echo "1. Go to https://github.com/${{ github.repository }}/wiki"
+          echo "2. Create the first wiki page manually"
+          echo "3. Future commits will auto-update the wiki"
       
       - name: Commit updated docs, changelog, and wiki mapping
         if: github.event_name == 'push'
