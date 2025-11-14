@@ -1,0 +1,85 @@
+name: Agentic PR Bot
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  agentic-action:
+    if: github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Get PR details
+        id: pr_details
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const files = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const fs = require('fs');
+            fs.writeFileSync('pr_files.txt', files.data.map(f => f.filename).join('\n'));
+            
+            // Get assignees
+            const assignees = context.payload.issue.assignees.map(a => a.login).join(',');
+            
+            core.setOutput('author', pr.data.user.login);
+            core.setOutput('assignees', assignees);
+            core.setOutput('branch', pr.data.head.ref);
+      
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.pr_details.outputs.branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests
+      
+      - name: Process action request
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_USER: ${{ github.event.comment.user.login }}
+          PR_AUTHOR: ${{ steps.pr_details.outputs.author }}
+          PR_ASSIGNEES: ${{ steps.pr_details.outputs.assignees }}
+        run: python .github/scripts/agentic-bot.py
+      
+      - name: Post response
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            
+            if (fs.existsSync('bot_response.md')) {
+              const response = fs.readFileSync('bot_response.md', 'utf8');
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: response
+              });
+            }
