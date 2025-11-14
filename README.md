@@ -1,6 +1,39 @@
-# Auto-Documentation CI/CD
+# Advanced Auto-Documentation CI/CD
 
-GitHub Actions workflow that automatically generates documentation when code changes.
+GitHub Actions workflow with intelligent code analysis and documentation generation.
+
+## Features
+
+### 🔍 1. Breaking Change Detection
+- Automatically detects when function signatures change
+- Identifies removed exports
+- Labels PRs as `breaking-change` and `major`
+- Suggests semver version bumps
+
+### 📝 2. Changelog Generation
+- Auto-updates CHANGELOG.md on every commit
+- Categorizes: Breaking Changes, Added, Changed, Removed
+- Links to commits and files
+- Maintains chronological history
+
+### 🎯 3. Diff-Aware Documentation
+- Only documents what actually changed
+- Shows before/after comparisons
+- Highlights modifications, not just regenerating everything
+- Includes git diffs in context
+
+### 🔗 4. Cross-File Impact Analysis
+- Detects when changes affect other files
+- Shows dependency relationships
+- Warns about potential cascading effects
+- Example: "You modified function X which is called by Y, Z"
+
+### 💬 5. Smart PR Comments
+- Comprehensive analysis posted on every PR
+- Breaking changes highlighted prominently
+- Impact analysis included
+- Action items for reviewers
+- Documentation links
 
 ## Setup for https://github.com/Kynlos/CI-CD-Monitor-Test
 
