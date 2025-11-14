@@ -1,83 +1,85 @@
 # API Documentation
 
-*Last updated: 1763154087.6357105*
+*Last updated: 1763155247.344252*
 
-### API Documentation for Database Module
-#### Overview of Changes
-The `database.ts` file has been updated with new exports and modifications to existing functions. This documentation outlines the changes, new functions, and usage examples.
+API Documentation
+================
 
-#### New/Modified Functions and Classes
-The following exports have been added or modified:
-* `class Database`: A class representing a database connection.
-* `export async function createConnection(config: DatabaseConfig)`: Creates a new database connection based on the provided configuration.
-* `export function sanitizeInput(input: string)`: Sanitizes user input to prevent SQL injection attacks.
-* `interface DatabaseConfig`: Defines the configuration options for a database connection.
+## Overview of Changes
 
-#### Usage Examples
-##### Creating a Database Connection
-```typescript
-import { createConnection, DatabaseConfig } from './database';
+The `generate-docs.py` script has been updated to generate comprehensive API documentation for changed code files. The script reads the changed files, sends them to the Groq API for documentation generation, and saves the generated documentation as a Markdown file.
 
-const config: DatabaseConfig = {
-  // configuration options
-  host: 'localhost',
-  port: 5432,
-  username: 'user',
-  password: 'password',
-  database: 'mydb',
-};
+## Functions and Classes
 
-createConnection(config).then((connection) => {
-  // use the connection
-}).catch((error) => {
-  // handle error
-});
+### `build_file_context(files_data)`
+
+*   **Description:** Builds a file context with the full code of the changed files.
+*   **Parameters:**
+    *   `files_data` (dict): A dictionary containing the file paths and their corresponding contents.
+*   **Returns:** A string representing the file context.
+
+### `generate_documentation(file_context, file_list)`
+
+*   **Description:** Calls the Groq API to generate documentation for the given file context and list of changed files.
+*   **Parameters:**
+    *   `file_context` (str): The file context built by the `build_file_context` function.
+    *   `file_list` (list): A list of changed file paths.
+*   **Returns:** A string representing the generated documentation.
+
+### `calculate_tokens(file_context)`
+
+*   **Description:** Calculates the token count and cost for the given file context.
+*   **Parameters:**
+    *   `file_context` (str): The file context built by the `build_file_context` function.
+*   **Returns:** A dictionary containing the token count and cost.
+
+### `main()`
+
+*   **Description:** The main entry point of the script. It reads the changed files, generates documentation, and saves it as a Markdown file.
+*   **Parameters:** None
+*   **Returns:** None
+
+## Usage Examples for Exports
+
+The `generate-docs.py` script can be used to generate documentation for changed code files. Here's an example usage:
+
+1.  Create a `changed_files.txt` file containing the paths of the changed files, one file per line.
+2.  Run the `generate-docs.py` script using Python: `python generate-docs.py`
+3.  The script will generate documentation for the changed files and save it as a Markdown file named `doc_output.md`.
+
+## Parameter Descriptions
+
+The `generate-docs.py` script uses the following parameters:
+
+*   `GROQ_API_KEY`: The API key for the Groq API.
+*   `GROQ_API_URL`: The URL of the Groq API.
+*   `MODEL`: The model used for documentation generation.
+
+## Return Value Documentation
+
+The `generate_documentation` function returns a string representing the generated documentation. The documentation includes an overview of changes, all functions and classes, usage examples for exports, parameter descriptions, and return value documentation.
+
+### Token Usage
+
+The `calculate_tokens` function calculates the token count and cost for the given file context. The token count is calculated by dividing the length of the file context by 4, and the cost is calculated by multiplying the token count by the Groq pricing (0.075 per 1 million tokens).
+
+### API Documentation File
+
+The generated documentation is saved as a Markdown file named `API-DOCS.md`. This file contains the API documentation for the changed code files.
+
+### PR Comment
+
+The generated documentation is also saved as a Markdown file named `doc_output.md`, which can be used as a PR comment. The file contains the API documentation for the changed code files, along with the token usage and cost.
+
+Commit Message
+--------------
+
+The commit message for the updated `generate-docs.py` script should include a brief description of the changes made, such as:
+
 ```
+Update generate-docs.py to generate comprehensive API documentation
 
-##### Sanitizing User Input
-```typescript
-import { sanitizeInput } from './database';
-
-const userInput = "Robert'); DROP TABLE Students; --";
-const sanitizedInput = sanitizeInput(userInput);
-console.log(sanitizedInput); // sanitized input
-```
-
-#### Migration Notes
-The `createConnection` function now returns a promise that resolves to a `Database` object. If you were previously using the `createConnection` function with a callback, you will need to update your code to use the promise-based approach.
-
-```typescript
-// before
-createConnection(config, (error, connection) => {
-  // use the connection
-});
-
-// after
-createConnection(config).then((connection) => {
-  // use the connection
-}).catch((error) => {
-  // handle error
-});
-```
-
-Note that the `DatabaseConfig` interface has been added to define the configuration options for a database connection. You should update your code to use this interface when creating a new database connection.
-
-```typescript
-// before
-const config = {
-  host: 'localhost',
-  port: 5432,
-  username: 'user',
-  password: 'password',
-  database: 'mydb',
-};
-
-// after
-const config: DatabaseConfig = {
-  host: 'localhost',
-  port: 5432,
-  username: 'user',
-  password: 'password',
-  database: 'mydb',
-};
+* Added support for generating documentation for changed code files
+* Updated the script to use the Groq API for documentation generation
+* Added token usage and cost calculation
 ```
