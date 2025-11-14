@@ -203,22 +203,47 @@ def commit_changes(files_changed, action_description):
         
         # Add changed files
         for file_path in files_changed:
-            subprocess.run(['git', 'add', file_path], check=True)
+            result = subprocess.run(['git', 'add', file_path], capture_output=True, text=True)
+            print(f"  git add {file_path}: {result.returncode}")
+        
+        # Check if there are changes to commit
+        status = subprocess.run(['git', 'status', '--short'], capture_output=True, text=True)
+        if not status.stdout.strip():
+            print("  No changes to commit (files unchanged)")
+            return "no-changes"
+        
+        print(f"  Changes to commit:\n{status.stdout}")
         
         # Commit
         commit_msg = f"bot: {action_description[:100]}"
-        subprocess.run(['git', 'commit', '-m', commit_msg], check=True)
+        result = subprocess.run(['git', 'commit', '-m', commit_msg], capture_output=True, text=True)
+        print(f"  Commit result: {result.returncode}")
+        print(f"  {result.stdout}")
+        
+        if result.returncode != 0:
+            print(f"  ERROR: {result.stderr}")
+            return None
+        
+        # Get commit hash BEFORE push
+        result = subprocess.run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True)
+        commit_hash = result.stdout.strip()
+        short_hash = commit_hash[:7]
         
         # Push
-        subprocess.run(['git', 'push'], check=True)
+        print(f"  Pushing commit {short_hash}...")
+        push_result = subprocess.run(['git', 'push'], capture_output=True, text=True)
+        print(f"  Push result: {push_result.returncode}")
+        print(f"  {push_result.stdout}")
         
-        # Get commit hash
-        result = subprocess.run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True)
-        commit_hash = result.stdout.strip()[:7]
+        if push_result.returncode != 0:
+            print(f"  Push ERROR: {push_result.stderr}")
+            return None
         
         return commit_hash
     except Exception as e:
         print(f"ERROR committing: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 def main():
