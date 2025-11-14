@@ -14,9 +14,12 @@ export interface LoginOptions {
 }
 
 export class AuthService {
-  async login(username: string, password: string, options?: LoginOptions): Promise<User> {
-    // Validate credentials
+  async login(username: string, password: string, rememberMe: boolean = false): Promise<User> {
+    // BREAKING: removed LoginOptions, added rememberMe as direct parameter
     const user = await this.validateCredentials(username, password);
+    if (rememberMe) {
+      // Store session
+    }
     return user;
   }
   
