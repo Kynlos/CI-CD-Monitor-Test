@@ -32,21 +32,25 @@ jobs:
               pull_number: context.issue.number
             });
             
-            const fs = require('fs');
-            fs.writeFileSync('pr_files.txt', files.data.map(f => f.filename).join('\n'));
-            
             // Get assignees
             const assignees = context.payload.issue.assignees.map(a => a.login).join(',');
             
             core.setOutput('author', pr.data.user.login);
             core.setOutput('assignees', assignees);
             core.setOutput('branch', pr.data.head.ref);
+            core.setOutput('files', files.data.map(f => f.filename).join(','));
       
       - name: Checkout PR branch
         uses: actions/checkout@v3
         with:
           ref: ${{ steps.pr_details.outputs.branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create PR files list
+        run: |
+          echo "${{ steps.pr_details.outputs.files }}" | tr ',' '\n' > pr_files.txt
+          echo "PR files:"
+          cat pr_files.txt
       
       - name: Set up Python
         uses: actions/setup-python@v4
