@@ -15,7 +15,7 @@ GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 COMMENT_BODY = os.environ.get('COMMENT_BODY', '')
 COMMENT_USER = os.environ.get('COMMENT_USER', 'user')
 GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-MODEL = 'llama-3.3-70b-versatile'
+MODEL = 'openai/gpt-oss-20b'
 
 def should_respond(comment_text):
     """Check if this comment is asking the bot a question"""
