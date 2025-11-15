@@ -35,7 +35,7 @@ GitHub Actions workflow with intelligent code analysis and documentation generat
 - Action items for reviewers
 - Documentation links
 
-### 📚 6. Intelligent Wiki Routing (NEW!)
+### 📚 6. Intelligent Wiki Routing
 - **Automatically routes docs to GitHub Wiki pages**
 - **LLM-powered smart categorization** - Decides best wiki page for each file
 - **Persistent mapping** - Never forgets where things go (`.github/wiki-mapping.json`)
@@ -43,6 +43,15 @@ GitHub Actions workflow with intelligent code analysis and documentation generat
 - **Consistency guaranteed** - Same files always go to same pages
 - **Domain grouping** - Related files organized together logically
 - **Auto-verification** - Checks mapping consistency on every run
+
+### 🔔 7. Discord/Slack Notifications
+- **Real-time updates** - Get notified when docs are updated
+- **Beautiful embeds** - Rich formatting with colors, links, and previews
+- **Breaking change alerts** - Highlighted warnings for critical changes
+- **Character limit handling** - Respects platform limits (Discord 2000/4096/6000)
+- **PR bump support** - Comment "bump", "review needed", etc. to alert team
+- **Urgency detection** - Auto-pings @here for urgent/blocked PRs
+- **Easy expansion** - Same code works for Discord and Slack
 
 ## Setup for https://github.com/Kynlos/CI-CD-Monitor-Test
 
