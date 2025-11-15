@@ -1,3 +1,8 @@
+---
+title: Payments
+layout: default
+---
+
 # payment-processor.ts
 
 *Auto-generated from `./payment-processor.ts`*

@@ -1,12 +1,12 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-15T23:25:23.209900",
+  "last_updated": "2025-11-15T23:25:56.783304",
   "file_to_page": {
     "pages-manager.ts": "api/pages-manager.md",
     "wiki-manager.ts": "guides/wiki-manager.md",
     "auth.ts": "api/authentication.md",
-    "payment-processor.ts": "api/payment-processor.md",
-    "email-service.ts": "api/email-service.md",
+    "payment-processor.ts": "api/payments.md",
+    "email-service.ts": "api/notifications.md",
     "database.ts": "api/database.md"
   },
   "page_metadata": {
@@ -31,7 +31,7 @@
       "sources": [
         "auth.ts"
       ],
-      "last_updated": "2025-11-15T23:21:07.866379",
+      "last_updated": "2025-11-15T23:25:54.938653",
       "last_action": "create"
     },
     "api/payment-processor.md": {
@@ -55,7 +55,23 @@
       "sources": [
         "database.ts"
       ],
-      "last_updated": "2025-11-15T23:21:09.476950",
+      "last_updated": "2025-11-15T23:25:56.782777",
+      "last_action": "create"
+    },
+    "api/payments.md": {
+      "created": "2025-11-15T23:25:55.566674",
+      "sources": [
+        "payment-processor.ts"
+      ],
+      "last_updated": "2025-11-15T23:25:55.566682",
+      "last_action": "create"
+    },
+    "api/notifications.md": {
+      "created": "2025-11-15T23:25:56.179459",
+      "sources": [
+        "email-service.ts"
+      ],
+      "last_updated": "2025-11-15T23:25:56.179468",
       "last_action": "create"
     }
   },
