@@ -76,6 +76,8 @@ jobs:
       - name: Run advanced code analysis
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: python .github/scripts/code-analyzer.py
       
       - name: Check for breaking changes
@@ -201,6 +203,7 @@ jobs:
           [ -d "docs" ] && git add docs/
           [ -f "CHANGELOG.md" ] && git add CHANGELOG.md
           [ -f ".github/wiki-mapping.json" ] && git add .github/wiki-mapping.json
+          [ -d "code-analysis" ] && git add code-analysis/
           [ -f "analysis_report.md" ] && git add analysis_report.md
           [ -f "analysis_results.json" ] && git add analysis_results.json
           

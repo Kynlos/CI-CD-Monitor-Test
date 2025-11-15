@@ -420,6 +420,16 @@ def main():
     print("ADVANCED CODE ANALYZER")
     print("="*80)
     
+    # Get commit info
+    commit_sha = os.environ.get('GITHUB_SHA', 'unknown')[:7]
+    timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    
+    # Create analysis directory with commit info
+    analysis_dir = Path('code-analysis') / f"{timestamp}_{commit_sha}"
+    analysis_dir.mkdir(parents=True, exist_ok=True)
+    
+    print(f"Analysis directory: {analysis_dir}\n")
+    
     # Read changed files
     if not os.path.exists('changed_files.txt'):
         print("No changed files detected")
@@ -469,12 +479,23 @@ def main():
             
             print()
     
-    # Save results
-    with open('analysis_results.json', 'w') as f:
+    # Save results to timestamped directory
+    results_file = analysis_dir / 'results.json'
+    with open(results_file, 'w') as f:
         json.dump(results, f, indent=2)
     
-    # Generate summary report
-    generate_summary_report(results)
+    # Generate summary report in timestamped directory
+    report_file = analysis_dir / 'report.md'
+    generate_summary_report(results, report_file)
+    
+    # Create symlinks/copies for easy access (for notifications)
+    latest_report = Path('analysis_report.md')
+    latest_results = Path('analysis_results.json')
+    
+    # Copy to root for backward compatibility
+    import shutil
+    shutil.copy(report_file, latest_report)
+    shutil.copy(results_file, latest_results)
     
     print("="*80)
     print("ANALYSIS COMPLETE")
@@ -482,13 +503,19 @@ def main():
     print(f"✓ {len(results)} files analyzed")
     print(f"⚠️  {total_vulns} security vulnerabilities found")
     print(f"🐌 {total_perf_issues} performance issues found")
-    print(f"📄 Report saved to: analysis_report.md")
+    print(f"📂 Analysis saved to: {analysis_dir}")
+    print(f"📄 Report: {report_file}")
+    print(f"📊 Data: {results_file}")
 
 
-def generate_summary_report(results: List[Dict]):
+def generate_summary_report(results: List[Dict], output_file: Path):
     """Generate markdown summary report"""
+    commit_sha = os.environ.get('GITHUB_SHA', 'unknown')[:7]
+    commit_url = f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', '')}/commit/{os.environ.get('GITHUB_SHA', '')}"
+    
     report = "# Code Analysis Report\n\n"
     report += f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n"
+    report += f"**Commit:** [`{commit_sha}`]({commit_url})\n\n"
     
     # Overall statistics
     avg_score = sum(r['quality_score']['total'] for r in results) / len(results) if results else 0
@@ -545,8 +572,8 @@ def generate_summary_report(results: List[Dict]):
     if total_perf > 0:
         report += f"- ⚡ **Optimize {total_perf} performance issues** - Consider algorithmic improvements\n"
     
-    # Save report
-    with open('analysis_report.md', 'w') as f:
+    # Save report to specified file
+    with open(output_file, 'w') as f:
         f.write(report)
 
 
