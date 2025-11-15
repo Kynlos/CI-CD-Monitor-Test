@@ -149,33 +149,23 @@ Decide ONE of these actions:
 Be smart about organization. Group related functionality together. Use clear, professional page names.
 """
 
-        try:
-            response = requests.post(
-                GROQ_API_URL,
-                headers={
-                    'Authorization': f'Bearer {GROQ_API_KEY}',
-                    'Content-Type': 'application/json'
-                },
-                json={
-                    'model': MODEL,
-                    'messages': [
-                        {'role': 'system', 'content': 'You are a documentation architect. Return ONLY valid JSON.'},
-                        {'role': 'user', 'content': prompt}
-                    ],
-                    'temperature': 0.2,
-                    'max_tokens': 200
-                },
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                result_text = response.json()['choices'][0]['message']['content'].strip()
-                
-                # Extract JSON from response
-                result_text = result_text.strip('`').strip()
-                if result_text.startswith('json'):
-                    result_text = result_text[4:].strip()
-                
+        # Use LLM wrapper with proper JSON handling
+        llm = get_client()
+        result_text = llm.call_chat(
+            model=MODEL,
+            messages=[
+                {'role': 'system', 'content': 'You are a documentation architect. Return ONLY valid JSON.'},
+                {'role': 'user', 'content': prompt}
+            ],
+            temperature=0.2,
+            max_tokens=200,
+            response_format='json',
+            timeout=30,
+            use_cache=True
+        )
+        
+        if result_text:
+            try:
                 decision = json.loads(result_text)
                 
                 action = decision.get('action', 'create')
@@ -186,11 +176,11 @@ Be smart about organization. Group related functionality together. Use clear, pr
                 print(f"  📝 Reasoning: {reasoning}")
                 
                 return (page_path, action, reasoning)
-            else:
-                print(f"  ⚠️  LLM failed, using fallback")
+            except Exception as e:
+                print(f"  ⚠️  JSON parse error: {e}, using fallback")
                 return self._fallback_decision(source_file)
-        except Exception as e:
-            print(f"  ⚠️  Error: {e}, using fallback")
+        else:
+            print(f"  ⚠️  LLM failed, using fallback")
             return self._fallback_decision(source_file)
     
     def _fallback_decision(self, source_file: str) -> Tuple[str, str, str]:
@@ -325,43 +315,26 @@ layout: default
 Return the COMPLETE merged page content in markdown format.
 """
 
-        try:
-            response = requests.post(
-                GROQ_API_URL,
-                headers={
-                    'Authorization': f'Bearer {GROQ_API_KEY}',
-                    'Content-Type': 'application/json'
-                },
-                json={
-                    'model': MODEL,
-                    'messages': [
-                        {'role': 'system', 'content': 'You are a documentation editor. Return clean markdown.'},
-                        {'role': 'user', 'content': prompt}
-                    ],
-                    'temperature': 0.3,
-                    'max_tokens': 4000
-                },
-                timeout=45
-            )
-            
-            if response.status_code == 200:
-                merged = response.json()['choices'][0]['message']['content'].strip()
-                
-                # Clean up code fences if LLM wrapped it
-                if merged.startswith('```markdown'):
-                    merged = merged[11:]
-                if merged.startswith('```'):
-                    merged = merged[3:]
-                if merged.endswith('```'):
-                    merged = merged[:-3]
-                
-                print(f"    ✓ LLM merged content successfully")
-                return merged.strip()
-            else:
-                print(f"    ⚠️  LLM merge failed, appending instead")
-                return existing + f"\n\n## {section_title or 'Update'}\n\n" + new_content
-        except Exception as e:
-            print(f"    ⚠️  Error in LLM merge: {e}, appending instead")
+        # Use LLM wrapper
+        llm = get_client()
+        merged = llm.call_chat(
+            model=MODEL,
+            messages=[
+                {'role': 'system', 'content': 'You are a documentation editor. Return clean markdown.'},
+                {'role': 'user', 'content': prompt}
+            ],
+            temperature=0.3,
+            max_tokens=4000,
+            response_format='text',
+            timeout=45,
+            use_cache=False  # Don't cache merges (content changes)
+        )
+        
+        if merged:
+            print(f"    ✓ LLM merged content successfully")
+            return merged.strip()
+        else:
+            print(f"    ⚠️  LLM merge failed, appending instead")
             return existing + f"\n\n## {section_title or 'Update'}\n\n" + new_content
     
     def generate_index_page(self):
