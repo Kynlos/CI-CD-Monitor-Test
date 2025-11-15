@@ -4,27 +4,29 @@
 
 # 📄 `pages-manager.py` – Intelligent GitHub Pages Documentation Manager
 
-> **TL;DR**  
-> A Python utility that automatically reads, analyzes, and updates a GitHub Pages site from your source‑code documentation.  
-> It uses an LLM (Groq) to decide whether to create, append, or modify pages, keeps a persistent mapping, and auto‑generates index pages for API, modules, and features.
+> **TL;DR** – A Python script that automatically reads your source‑code documentation, decides where it belongs in a GitHub Pages site, and creates/updates Markdown pages accordingly. It uses an LLM (via `llm.get_client()`) to make intelligent decisions and to merge content.
 
 ---
 
 ## 1. Overview
 
-`pages-manager.py` is a CI‑driven script that:
+`pages-manager.py` is a CI‑driven helper that keeps a GitHub Pages documentation site in sync with your codebase.  
+Key responsibilities:
 
-| Feature | What it does |
-|---------|--------------|
-| **LLM‑powered decision making** | Uses Groq’s GPT‑OSS model to decide where a new piece of documentation belongs. |
-| **Full site awareness** | Scans the existing `docs-site/` directory, builds a summary, and feeds it to the LLM. |
-| **Smart page handling** | Creates new pages, appends new sections, or modifies existing ones based on LLM output. |
-| **Index generation** | Auto‑generates `index.md` files for API, modules, and features. |
-| **Persistent mapping** | Stores a JSON mapping (`.github/pages-mapping.json`) that tracks which source file maps to which page and when it was last updated. |
-| **CLI‑friendly** | Can be run directly from the command line; it reads `changed_files.txt` and `docs/` to determine what to process. |
+| Responsibility | What it does |
+|----------------|--------------|
+| **LLM‑powered decision making** | Determines whether a new page should be created, an existing page appended to, or an existing page modified. |
+| **Page scanning** | Reads all existing Markdown files in `docs-site/` to build a context for the LLM. |
+| **Page creation / modification** | Generates front‑matter, writes new pages, appends sections, or merges updates. |
+| **Index generation** | Builds `index.md` and sub‑index pages (`api/index.md`, `modules/index.md`, `features/index.md`) automatically. |
+| **Mapping persistence** | Stores a JSON mapping (`.github/pages-mapping.json`) that tracks which source file maps to which page, when it was last updated, etc. |
+| **CLI entry point** | Reads a list of changed source files (`changed_files.txt`), finds corresponding Markdown docs in `docs/`, and runs the whole pipeline. |
 
 > **Why use it?**  
-> When you add or change a TypeScript/JavaScript file, you typically update its Markdown documentation. This script automatically pushes those changes into a well‑structured GitHub Pages site without manual editing.
+> *No manual page creation.*  
+> *Consistent, AI‑driven structure.*  
+> *Automatic index updates.*  
+> *Audit trail via the mapping file.*
 
 ---
 
@@ -32,147 +34,127 @@
 
 | Export | Type | Description |
 |--------|------|-------------|
-| `PagesManager` | Class | Core class that handles page mapping, LLM decisions, and file operations. |
-| `process_docs_to_pages(doc_files: List[str])` | Function | High‑level entry point that processes a list of Markdown docs and updates the site. |
-| `GROQ_API_KEY` | Constant | Environment variable used for authentication with Groq. |
-| `MODEL` | Constant | The LLM model name (`openai/gpt-oss-120b`). |
-| `PAGES_DIR` | Constant | Path to the output documentation site (`docs-site/`). |
-| `MAPPING_FILE` | Constant | Path to the JSON mapping file (`.github/pages-mapping.json`). |
+| `PagesManager` | Class | Core engine that handles mapping, LLM decisions, and file operations. |
+| `process_docs_to_pages(doc_files: List[str])` | Function | High‑level helper that processes a list of Markdown docs and updates the site. |
+| `if __name__ == "__main__":` | Script entry point | Reads `changed_files.txt`, maps to docs, and calls `process_docs_to_pages`. |
 
-> **Note:** The script also imports `get_client` from `llm.py` (not exported here) but is only used internally for LLM calls.
+> **Note** – The script also imports `get_client` from `llm`, but that is a dependency, not an export of this file.
 
 ---
 
 ## 3. Usage Examples
 
-### 3.1. Running the script from the command line
+### 3.1 Using the `PagesManager` directly
+
+```python
+from pathlib import Path
+from pages_manager import PagesManager
+
+# Instantiate
+manager = PagesManager()
+
+# Example: decide where a new doc should go
+source_file = "src/authentication.ts"
+doc_content = "# Authentication\n\nDetails about auth..."
+
+page_path, action, reasoning = manager.make_intelligent_decision(source_file, doc_content)
+print(page_path, action, reasoning)
+
+# Apply the decision
+manager.apply_documentation_change(page_path, action, doc_content)
+
+# Persist mapping
+manager.save_mapping()
+```
+
+### 3.2 Running the full pipeline from the command line
 
 ```bash
-# Ensure GROQ_API_KEY is set
-export GROQ_API_KEY="sk-..."
+# 1. Ensure changed files list exists
+echo "src/authentication.ts" > changed_files.txt
 
-# Create a list of changed source files
-echo "src/auth.ts" >> changed_files.txt
-echo "src/database.ts" >> changed_files.txt
-
-# Run the manager
-python .github/scripts/pages-manager.py
+# 2. Run the script
+python3 .github/scripts/pages-manager.py
 ```
 
 The script will:
 
 1. Read `changed_files.txt`.
-2. Map each source file to its Markdown counterpart in `docs/`.
-3. Process each doc file, updating `docs-site/`.
-4. Generate index pages and a summary `pages_summary.md`.
-
-### 3.2. Using the API programmatically
-
-```python
-from pathlib import Path
-from pages_manager import PagesManager, process_docs_to_pages
-
-# 1. Instantiate the manager
-manager = PagesManager()
-
-# 2. Decide where to put a new doc
-page_path, action, reasoning = manager.make_intelligent_decision(
-    source_file="src/payment.ts",
-    doc_content="# Payment API\n\nDetails..."
-)
-
-# 3. Apply the change
-manager.apply_documentation_change(
-    page_path=page_path,
-    action=action,
-    doc_content="# Payment API\n\nDetails...",
-    section_title="Payment Processing"
-)
-
-# 4. Generate index pages after all changes
-manager.generate_index_page()
-
-# 5. Save the mapping
-manager.save_mapping()
-```
-
-### 3.3. Batch processing a list of Markdown files
-
-```python
-doc_files = [
-    "docs/auth.md",
-    "docs/database.md",
-    "docs/payment.md"
-]
-process_docs_to_pages(doc_files)
-```
+2. Find corresponding Markdown docs in `docs/`.
+3. Use the LLM to decide placement.
+4. Create/append/modify pages in `docs-site/`.
+5. Generate index pages.
+6. Write a summary to `pages_summary.md`.
 
 ---
 
 ## 4. Parameters & Return Values
 
-### 4.1. `PagesManager.__init__()`
+### 4.1 `PagesManager.__init__()`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| *None* | | Initializes mapping and scans existing pages. |
+| – | – | Initializes mapping and scans existing pages. |
 
 | Return | Type | Description |
 |--------|------|-------------|
-| *None* | | Sets `self.mapping` and `self.existing_pages`. |
+| – | – | None (initializes instance attributes). |
 
 ---
 
-### 4.2. `PagesManager.load_mapping() -> Dict`
+### 4.2 `PagesManager.load_mapping() -> Dict`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| *None* | | Reads `.github/pages-mapping.json` if it exists. |
+| – | – | Reads `.github/pages-mapping.json` if present. |
 
 | Return | Type | Description |
 |--------|------|-------------|
-| `Dict` | | Mapping object with keys: `version`, `last_updated`, `file_to_page`, `page_metadata`, `site_structure`. |
+| `Dict` | Mapping structure with keys: `version`, `last_updated`, `file_to_page`, `page_metadata`, `site_structure`. |
 
 ---
 
-### 4.3. `PagesManager.save_mapping() -> None`
+### 4.3 `PagesManager.save_mapping() -> None`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| *None* | | Writes `self.mapping` to `MAPPING_FILE`. |
+| – | – | Writes the current mapping to `.github/pages-mapping.json`. |
 
 | Return | Type | Description |
 |--------|------|-------------|
-| `None` | | Side‑effect: file written. |
+| – | – | None. |
 
 ---
 
-### 4.4. `PagesManager.scan_existing_pages() -> Dict[str, str]`
+### 4.4 `PagesManager.scan_existing_pages() -> Dict[str, str]`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| *None* | | Walks `PAGES_DIR` for `.md` files. |
+| – | – | Scans `docs-site/` for `.md` files. |
 
 | Return | Type | Description |
 |--------|------|-------------|
-| `Dict[str, str]` | | Mapping of relative file path → file content. |
+| `Dict[str, str]` | Mapping of relative file path → file content. |
 
 ---
 
-### 4.5. `PagesManager.make_intelligent_decision(source_file: str, doc_content: str) -> Tuple[str, str, str]`
+### 4.5 `PagesManager.make_intelligent_decision(source_file: str, doc_content: str) -> Tuple[str, str, str]`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `source_file` | `str` | Name of the source file (e.g., `auth.ts`). |
+| `source_file` | `str` | Name of the source file (e.g., `authentication.ts`). |
 | `doc_content` | `str` | Markdown content of the documentation. |
 
 | Return | Type | Description |
 |--------|------|-------------|
-| `Tuple[str, str, str]` | | `(page_path, action, reasoning)` where `action` ∈ `{create, append, modify}`. |
+| `Tuple[str, str, str]` | `(page_path, action, reasoning)` |
+| `page_path` | `str` | Target Markdown file relative to `docs-site/`. |
+| `action` | `str` | One of `"create"`, `"append"`, `"modify"`. |
+| `reasoning` | `str` | Short explanation from the LLM. |
 
 ---
 
-### 4.6. `PagesManager._fallback_decision(source_file: str) -> Tuple[str, str, str]`
+### 4.6 `PagesManager._fallback_decision(source_file: str) -> Tuple[str, str, str]`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -180,27 +162,42 @@ process_docs_to_pages(doc_files)
 
 | Return | Type | Description |
 |--------|------|-------------|
-| `Tuple[str, str, str]` | | Fallback `(page_path, action, reasoning)` if LLM fails. |
+| `Tuple[str, str, str]` | Fallback `(page_path, action, reasoning)` when the LLM fails. |
 
 ---
 
-### 4.7. `PagesManager.apply_documentation_change(page_path: str, action: str, doc_content: str, section_title: str = None) -> bool`
+### 4.7 `PagesManager.apply_documentation_change(page_path: str, action: str, doc_content: str, section_title: str = None) -> bool`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `page_path` | `str` | Relative path inside `PAGES_DIR` (e.g., `api/authentication.md`). |
-| `action` | `str` | One of `create`, `append`, `modify`. |
+| `page_path` | `str` | Target file path relative to `docs-site/`. |
+| `action` | `str` | `"create"`, `"append"`, or `"modify"`. |
 | `doc_content` | `str` | Markdown content to apply. |
-| `section_title` | `str` | Optional title for new section (used in `append`/`modify`). |
+| `section_title` | `str` | Optional section title for append/modify. |
 
 | Return | Type | Description |
 |--------|------|-------------|
-| `bool` | | `True` if file was written/modified, `False` otherwise. |
+| `bool` | `True` if file operation succeeded, otherwise `False`. |
 
 ---
 
-### 4.8. `PagesManager._create_page(path: Path, content: str) -> bool`
+### 4.8 `PagesManager._create_page(path: Path, content: str) -> bool`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `path` | `
+| `path` | `Path` | Full file path. |
+| `content` | `str` | Markdown body. |
+
+| Return | Type | Description |
+|--------|------|-------------|
+| `bool` | `True` on success. |
+
+---
+
+### 4.9 `PagesManager._append_to_page(path: Path, content: str, section_title: str) -> bool`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `path` | `Path` | Full file path. |
+| `content` | `str` | Markdown to append. |
+| `section
