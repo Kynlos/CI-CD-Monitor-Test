@@ -6,6 +6,7 @@ Handles character limits and formats messages beautifully
 
 import os
 import sys
+import re
 import json
 import requests
 from pathlib import Path
