@@ -18,8 +18,11 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
+# Import LLM wrapper
+sys.path.insert(0, str(Path(__file__).parent))
+from llm import get_client
+
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
-GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 MODEL = 'openai/gpt-oss-120b'  # Use more powerful model for better decisions
 
 PAGES_DIR = Path('docs-site')
