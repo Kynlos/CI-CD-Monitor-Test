@@ -27,26 +27,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.1'
-          bundler-cache: true
-      
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
       - name: Build with Jekyll
-        run: |
-          cd docs-site
-          gem install bundler jekyll
-          bundle init
-          echo 'gem "github-pages", group: :jekyll_plugins' >> Gemfile
-          bundle install
-          bundle exec jekyll build
-        env:
-          JEKYLL_ENV: production
-          PAGES_REPO_NWO: ${{ github.repository }}
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs-site
+          destination: ./docs-site/_site
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
