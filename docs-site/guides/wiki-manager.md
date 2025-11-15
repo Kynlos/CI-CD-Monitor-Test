@@ -1,3 +1,8 @@
+---
+title: Wiki Manager
+layout: default
+---
+
 # wiki-manager.py
 
 *Auto-generated from `.github/scripts/wiki-manager.py`*

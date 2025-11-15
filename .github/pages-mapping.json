@@ -1,0 +1,44 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-11-15T23:03:22.982435",
+  "file_to_page": {
+    "pages-manager.ts": "api/pages-manager.md",
+    "wiki-manager.ts": "guides/wiki-manager.md"
+  },
+  "page_metadata": {
+    "api/pages-manager.md": {
+      "created": "2025-11-15T23:03:22.438303",
+      "sources": [
+        "pages-manager.ts"
+      ],
+      "last_updated": "2025-11-15T23:03:22.438314",
+      "last_action": "create"
+    },
+    "guides/wiki-manager.md": {
+      "created": "2025-11-15T23:03:22.982014",
+      "sources": [
+        "wiki-manager.ts"
+      ],
+      "last_updated": "2025-11-15T23:03:22.982024",
+      "last_action": "create"
+    }
+  },
+  "site_structure": {
+    "index.md": {
+      "title": "Home",
+      "category": "root"
+    },
+    "api/": {
+      "title": "API Reference",
+      "category": "api"
+    },
+    "guides/": {
+      "title": "Guides",
+      "category": "guides"
+    },
+    "changelog/": {
+      "title": "Changelog",
+      "category": "changelog"
+    }
+  }
+}
