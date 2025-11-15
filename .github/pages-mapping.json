@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-15T23:43:15.715329",
+  "last_updated": "2025-11-15T23:44:03.041302",
   "file_to_page": {
     "pages-manager.ts": "api/pages-manager.md",
     "wiki-manager.ts": "guides/wiki-manager.md",
@@ -32,7 +32,7 @@
       "sources": [
         "auth.ts"
       ],
-      "last_updated": "2025-11-15T23:41:18.057169",
+      "last_updated": "2025-11-15T23:44:01.050404",
       "last_action": "create"
     },
     "api/payment-processor.md": {
@@ -56,7 +56,7 @@
       "sources": [
         "database.ts"
       ],
-      "last_updated": "2025-11-15T23:41:20.006004",
+      "last_updated": "2025-11-15T23:44:03.040491",
       "last_action": "create"
     },
     "api/payments.md": {
@@ -64,7 +64,7 @@
       "sources": [
         "payment-processor.ts"
       ],
-      "last_updated": "2025-11-15T23:41:18.713523",
+      "last_updated": "2025-11-15T23:44:01.696152",
       "last_action": "create"
     },
     "api/notifications.md": {
@@ -72,7 +72,7 @@
       "sources": [
         "email-service.ts"
       ],
-      "last_updated": "2025-11-15T23:41:19.363724",
+      "last_updated": "2025-11-15T23:44:02.379649",
       "last_action": "create"
     },
     "api/llm.md": {
