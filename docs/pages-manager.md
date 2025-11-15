@@ -2,75 +2,161 @@
 
 *Auto-generated from `.github/scripts/pages-manager.py`*
 
-# `pages-manager.py` – API Documentation
+# `pages-manager.py` – Intelligent GitHub Pages Documentation Manager
 
-> **Intelligent GitHub Pages Documentation Manager**  
-> Automates the creation, updating, and organization of Markdown documentation for a GitHub‑Pages site using an LLM (Groq) to decide where each piece of documentation belongs.
-
----
-
-## Overview
-
-`pages-manager.py` is a self‑contained Python module that:
-
-1. **Scans** the existing documentation site (`docs-site/`) and builds an in‑memory map of pages.
-2. **Decides**—via a Groq LLM—whether a new Markdown file should be created, appended to an existing page, or modified.
-3. **Applies** the chosen action, handling front‑matter, section insertion, and intelligent merging.
-4. **Generates** an updated `index.md` with navigation links.
-5. **Persists** a mapping file (`.github/pages-mapping.json`) that tracks which source file maps to which documentation page.
-6. **Produces** a summary (`pages_summary.md`) of all changes made during a run.
-
-The module is designed to be run as a CI/CD step or locally after a set of source files have changed. It expects:
-
-| File | Purpose |
-|------|---------|
-| `changed_files.txt` | List of changed source files (one per line). |
-| `docs/` | Directory containing Markdown docs that correspond to the source files. |
-| `docs-site/` | Target directory for the generated GitHub‑Pages site. |
-| `.github/pages-mapping.json` | Persistent mapping between source files and generated pages. |
+> **TL;DR** – A Python script that automatically turns Markdown documentation files into a well‑structured GitHub Pages site.  
+> It uses an LLM (Groq) to decide whether to create, append, or modify pages, merges content intelligently, and keeps a persistent mapping of source files to page paths.
 
 ---
 
-## Exports
+## 1. Overview
+
+`pages-manager.py` is a CI‑driven tool that:
+
+| Feature | What it does |
+|---------|--------------|
+| **LLM‑powered decision making** | Sends the source file name and its Markdown content to Groq’s LLM to decide *where* the documentation should live. |
+| **Smart page handling** | Creates new pages, appends to existing ones, or modifies pages while preserving front‑matter and timestamps. |
+| **Index generation** | Builds a main `index.md` and per‑section index pages (e.g. `api/index.md`). |
+| **Persistent mapping** | Stores a JSON mapping (`.github/pages-mapping.json`) that tracks which source file maps to which page and metadata. |
+| **CI integration** | Reads a `changed_files.txt` list, looks up corresponding Markdown docs in `docs/`, and updates the GitHub Pages site in `docs-site/`. |
+| **Security & audit** | Uses environment variables for the Groq API key and logs all actions to the console. |
+
+> **Why use it?**  
+> When you add or modify TypeScript/JavaScript source files, you usually also update the Markdown docs. This script automates the tedious part of moving those docs into the right place on your GitHub Pages site, ensuring consistency and reducing human error.
+
+---
+
+## 2. Exports
 
 | Export | Type | Description |
 |--------|------|-------------|
-| `PagesManager` | **class** | Core class that encapsulates all page‑management logic. |
-| `process_docs_to_pages(doc_files: List[str])` | **function** | High‑level helper that processes a list of Markdown files and updates the site. |
+| `PagesManager` | Class | Core engine that scans existing pages, makes LLM decisions, applies changes, and generates indexes. |
+| `process_docs_to_pages(doc_files: List[str])` | Function | High‑level entry point that processes a list of Markdown files, updates the site, and writes a summary. |
+| `GROQ_API_KEY` | `str` | Environment variable holding the Groq API key. |
+| `GROQ_API_URL` | `str` | Endpoint for the Groq chat completions API. |
+| `MODEL` | `str` | LLM model name (`openai/gpt-oss-120b`). |
+| `PAGES_DIR` | `Path` | Directory where the generated GitHub Pages site lives (`docs-site/`). |
+| `MAPPING_FILE` | `str` | Path to the persistent JSON mapping (`.github/pages-mapping.json`). |
 
-> **Note**: The module also defines several constants (`GROQ_API_KEY`, `GROQ_API_URL`, `MODEL`, `PAGES_DIR`, `MAPPING_FILE`) that are used internally.
-
----
-
-## `PagesManager` Class
-
-| Method | Parameters | Return Value | Description |
-|--------|------------|--------------|-------------|
-| `__init__(self)` | – | – | Loads the mapping file and scans existing pages. |
-| `load_mapping(self) -> Dict` | – | `dict` | Reads `.github/pages-mapping.json` or returns a fresh mapping structure. |
-| `save_mapping(self) -> None` | – | – | Writes the current mapping to disk and updates the `last_updated` timestamp. |
-| `scan_existing_pages(self) -> Dict[str, str]` | – | `dict` | Walks `docs-site/` and returns `{relative_path: content}` for every Markdown file. |
-| `make_intelligent_decision(self, source_file: str, doc_content: str) -> Tuple[str, str, str]` | `source_file` – name of the source file (e.g., `auth.ts`)<br>`doc_content` – Markdown content to be added | `(page_path, action, reasoning)`<br>`page_path` – target Markdown file (relative to `docs-site/`).<br>`action` – `"create" | "append" | "modify"`. | Calls the Groq LLM to decide where the content should go. Falls back to heuristics if the LLM fails. |
-| `_fallback_decision(self, source_file: str) -> Tuple[str, str, str]` | `source_file` | Same as above | Heuristic decision when the LLM is unreachable. |
-| `apply_documentation_change(self, page_path: str, action: str, doc_content: str, section_title: str = None) -> bool` | `page_path` – target file<br>`action` – `"create" | "append" | "modify"`<br>`doc_content` – Markdown to apply<br>`section_title` – optional section header for append/modify | `bool` – `True` if the file was written/updated successfully. | Dispatches to the appropriate helper (`_create_page`, `_append_to_page`, `_modify_page`). |
-| `_create_page(self, path: Path, content: str) -> bool` | `path` – full file path<br>`content` – Markdown body | `bool` | Creates a new file with front‑matter. |
-| `_append_to_page(self, path: Path, content: str, section_title: str) -> bool` | `path` – full file path<br>`content` – Markdown to append<br>`section_title` – header for the new section | `bool` | Adds a new section to an existing page. |
-| `_modify_page(self, path: Path, new_content: str, section_title: str) -> bool` | `path` – full file path<br>`new_content` – Markdown to merge<br>`section_title` – header for the section to modify | `bool` | Uses the LLM to intelligently merge or replace content. |
-| `_intelligent_merge(self, existing: str, new_content: str, section_title: str, page_name: str) -> str` | `existing` – current page content<br>`new_content` – new Markdown<br>`section_title` – target section<br>`page_name` – file name (for context) | `str` – merged Markdown | Calls the LLM to produce a merged page. |
-| `generate_index_page(self) -> None` | – | – | Builds or updates `docs-site/index.md` with navigation links to all pages. |
+> **Note** – The script also contains a `__main__` block that can be executed directly.
 
 ---
 
-## `process_docs_to_pages(doc_files: List[str])`
+## 3. Usage Examples
+
+### 3.1 Running the script from the command line
+
+```bash
+# 1. Ensure the Groq API key is set
+export GROQ_API_KEY="sk-..."
+
+# 2. Create a list of changed source files (e.g. from a CI job)
+echo "src/auth.ts" > changed_files.txt
+echo "src/payment.ts" >> changed_files.txt
+
+# 3. Run the manager
+python .github/scripts/pages-manager.py
+```
+
+The script will:
+
+1. Read `changed_files.txt`.
+2. Find corresponding Markdown docs in `docs/`.
+3. Use the LLM to decide where to place each doc.
+4. Create/append/modify pages under `docs-site/`.
+5. Generate `index.md` and section indexes.
+6. Write a `pages_summary.md` and update `.github/pages-mapping.json`.
+
+### 3.2 Using `PagesManager` programmatically
+
+```python
+from pathlib import Path
+from pages_manager import PagesManager
+
+# Instantiate the manager
+manager = PagesManager()
+
+# Example: create a new page
+page_path = "api/new-feature.md"
+content = "# New Feature\n\nDetails about the new feature."
+manager.apply_documentation_change(page_path, "create", content)
+
+# Example: append to an existing page
+section_title = "New Functionality"
+new_section = "## New Functionality\n\nDescription of the new function."
+manager.apply_documentation_change("api/old-module.md", "append", new_section, section_title)
+
+# Generate indexes after changes
+manager.generate_index_page()
+```
+
+### 3.3 Using `process_docs_to_pages`
+
+```python
+from pages_manager import process_docs_to_pages
+
+# Suppose you have a list of Markdown docs to process
+docs = [
+    "docs/auth.md",
+    "docs/payment.md",
+    "docs/notifications.md",
+]
+
+process_docs_to_pages(docs)
+```
+
+---
+
+## 4. Parameters & Return Values
+
+### 4.1 `PagesManager.__init__(self)`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `doc_files` | `List[str]` | Paths to Markdown files that should be processed. |
+| None | – | Initializes `self.mapping` and `self.existing_pages`. |
 
-| Return Value | Description |
-|--------------|-------------|
-| `None` | The function writes files to disk, updates the mapping, and creates a summary. |
+**Return** – `None` (constructor).
 
-**Behaviour**  
-1. Instantiates `PagesManager`.  
-2. For each Markdown file
+---
+
+### 4.2 `PagesManager.load_mapping(self) -> Dict`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None | – | Loads mapping from `MAPPING_FILE` if it exists. |
+
+**Return** – A dictionary with keys: `version`, `last_updated`, `file_to_page`, `page_metadata`, `site_structure`.
+
+---
+
+### 4.3 `PagesManager.save_mapping(self) -> None`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None | – | Writes `self.mapping` to `MAPPING_FILE`. |
+
+**Return** – `None`.
+
+---
+
+### 4.4 `PagesManager.scan_existing_pages(self) -> Dict[str, str]`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None | – | Scans `PAGES_DIR` for all `.md` files and reads their content. |
+
+**Return** – Dictionary mapping relative file paths to file contents.
+
+---
+
+### 4.5 `PagesManager.make_intelligent_decision(self, source_file: str, doc_content: str) -> Tuple[str, str, str]`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `source_file` | `str` | Name of the source file (e.g. `auth.ts`). |
+| `doc_content` | `str` | Markdown content of the documentation. |
+
+**Return** – `(page_path, action, reasoning)` where:
+- `page_path` – Target Markdown file path (relative to `PAGES_DIR`).
+- `action` – One of

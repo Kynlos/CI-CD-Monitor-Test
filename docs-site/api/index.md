@@ -10,7 +10,11 @@ Complete API documentation for all modules.
 
 ## Available APIs
 
-Documentation will be auto-generated and appear here as you commit code changes.
+- [Authentication](authentication.md) - Auto-generated API documentation
+- [Database](database.md) - Auto-generated API documentation
+- [Email Service](email-service.md) - Auto-generated API documentation
+- [Pages Manager](pages-manager.md) - Auto-generated API documentation
+- [Payment Processor](payment-processor.md) - Auto-generated API documentation
 
 ---
 
