@@ -438,10 +438,11 @@ Watch your first workflow run at: `https://github.com/<owner>/<repo>/actions`
 Edit `.github/scripts/generate-docs.py`:
 
 ```python
-MODEL = 'llama-3.3-70b-versatile'  # Default (fast, cheap)
-# MODEL = 'llama-3.1-70b-versatile'  # Alternative
-# MODEL = 'mixtral-8x7b-32768'       # Mixtral option
+MODEL = 'openai/gpt-oss-20b'        # Default (balanced speed and quality)
+# MODEL = 'openai/gpt-oss-120b'     # More powerful but slower and more expensive
 ```
+
+Both scripts use the same model (generate-docs.py and wiki-manager.py)
 
 ### Customize Documentation Prompt
 
@@ -902,21 +903,26 @@ git diff --name-only HEAD~1 HEAD
 
 ### Groq API Costs
 
-**Model:** `llama-3.3-70b-versatile`
+**Default Model:** `openai/gpt-oss-20b`
 
-**Pricing:** $0.075 per 1M tokens
+**Pricing:** FREE (via Groq's partnership with OpenAI)
+
+**Optional Upgrade:** `openai/gpt-oss-120b`
+- More powerful analysis
+- Better documentation quality
+- Still FREE via Groq
 
 **Typical Usage:**
-- Small file (< 200 lines): ~500 tokens = $0.0000375
-- Medium file (200-500 lines): ~2,000 tokens = $0.00015
-- Large file (> 500 lines): ~5,000 tokens = $0.000375
+- Small file (< 200 lines): ~500 tokens
+- Medium file (200-500 lines): ~2,000 tokens
+- Large file (> 500 lines): ~5,000 tokens
 
-**Monthly Estimate (100 commits/month):**
-- Small project: $0.004/month (~$0.05/year)
-- Medium project: $0.015/month (~$0.18/year)
-- Large project: $0.038/month (~$0.46/year)
+**Monthly Cost:** $0 (completely free!)
 
-**Free tier:** 30 requests/minute, 14,400/day
+**Rate Limits:** 
+- 30 requests/minute
+- 14,400 requests/day
+- More than enough for most teams
 
 ### GitHub Actions Minutes
 
