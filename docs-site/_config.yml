@@ -2,11 +2,11 @@
 
 title: CI/CD Monitor Test Documentation
 description: Automated API documentation and code analysis
-baseurl: "/CI-CD-Monitor-Test"
-url: "https://kynlos.github.io"
+baseurl: ""
+url: "https://kynlos.github.io/CI-CD-Monitor-Test"
 
-# Theme
-theme: jekyll-theme-cayman
+# Theme - use remote theme for GitHub Pages
+remote_theme: pages-themes/cayman@v0.2.0
 # Alternative themes: minima, jekyll-theme-slate, jekyll-theme-architect
 
 # Plugins
