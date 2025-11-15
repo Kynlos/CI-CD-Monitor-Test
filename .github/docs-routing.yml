@@ -1,0 +1,50 @@
+# Documentation Routing Rules
+# Deterministic routing first, LLM fallback for edge cases
+
+routes:
+  # API modules go to api/ in Pages and corresponding Wiki pages
+  - glob: "**/auth*"
+    pages: "api/authentication.md"
+    wiki: "Authentication-API"
+    
+  - glob: "**/database*"
+    pages: "api/database.md"
+    wiki: "Database-Layer"
+    
+  - glob: "**/payment*"
+    pages: "api/payments.md"
+    wiki: "Payment-Processing"
+    
+  - glob: "**/email*"
+    pages: "api/notifications.md"
+    wiki: "Email-Service"
+  
+  # Testing files go to testing guide
+  - glob: "**/*test*"
+    pages: "guides/testing.md"
+    wiki: "Testing-Guide"
+  
+  - glob: "**/*spec*"
+    pages: "guides/testing.md"
+    wiki: "Testing-Guide"
+  
+  # Utilities and helpers
+  - glob: "**/util*"
+    pages: "api/utilities.md"
+    wiki: "Utilities"
+    
+  - glob: "**/helper*"
+    pages: "api/utilities.md"
+    wiki: "Utilities"
+  
+  # Configuration files
+  - glob: "**/config*"
+    pages: "guides/configuration.md"
+    wiki: "Configuration"
+
+# Strategy
+strategy:
+  prefer_rules: true              # Try rules first before LLM
+  llm_fallback: true              # Use LLM when no rule matches
+  cache_decisions: true           # Cache LLM decisions in mapping
+  skip_trivial_changes: true      # Skip whitespace-only changes
