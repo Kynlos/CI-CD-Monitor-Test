@@ -2,11 +2,17 @@
 
 *Auto-generated from `./email-service.ts`*
 
-# Email Service Module
+# Email Service Module (`email-service.ts`)
 
-The **email-service.ts** module provides a simple, type‑safe API for sending single or bulk emails.  
-It validates recipients, supports plain‑text and HTML bodies, optional CC/BCC, and attachments.  
-The actual sending is delegated to a provider‑specific implementation (`sendViaProvider`), which is currently a stub but can be replaced with a real service such as SendGrid, Mailgun, SES, etc.
+## Overview
+The **Email Service** module provides a lightweight, type‑safe API for sending single or bulk emails from a Node.js/TypeScript application.  
+- Validates recipient addresses.  
+- Supports plain‑text and HTML bodies.  
+- Handles optional CC/BCC and attachments.  
+- Returns a clear success/error result for each send operation.  
+- The actual transport is abstracted behind `sendViaProvider`, making it trivial to swap out SendGrid, Mailgun, SES, etc.
+
+> **Note**: The current implementation simulates a provider and always returns a message ID. Replace `sendViaProvider` with a real provider SDK for production use.
 
 ---
 
@@ -14,22 +20,22 @@ The actual sending is delegated to a provider‑specific implementation (`sendVi
 
 | Export | Type | Description |
 |--------|------|-------------|
-| `EmailOptions` | *interface* | Configuration object for a single email. |
-| `Attachment` | *interface* | Represents an email attachment. |
-| `EmailResult` | *interface* | Result of an email send operation. |
-| `sendEmail` | *function* | Sends a single email. |
-| `sendBulkEmails` | *function* | Sends the same template to multiple recipients. |
+| `EmailOptions` | Interface | Configuration object for a single email. |
+| `Attachment` | Interface | Represents an email attachment. |
+| `EmailResult` | Interface | Result of an email send operation. |
+| `sendEmail` | Function | Sends a single email. |
+| `sendBulkEmails` | Function | Sends the same template to multiple recipients. |
 
 ---
 
 ## Usage Examples
 
-### 1. Sending a single email
+### 1. Sending a Single Email
 
 ```ts
 import { sendEmail, EmailOptions } from './email-service';
 
-const options: EmailOptions = {
+const email: EmailOptions = {
   to: ['alice@example.com'],
   subject: 'Welcome!',
   body: 'Hello Alice, welcome to our platform.',
@@ -44,16 +50,19 @@ const options: EmailOptions = {
   ],
 };
 
-const result = await sendEmail(options);
-
-if (result.success) {
-  console.log(`Email sent, message ID: ${result.messageId}`);
-} else {
-  console.error(`Failed to send email: ${result.error}`);
+async function main() {
+  const result = await sendEmail(email);
+  if (result.success) {
+    console.log(`Email sent, messageId: ${result.messageId}`);
+  } else {
+    console.error(`Failed to send email: ${result.error}`);
+  }
 }
+
+main();
 ```
 
-### 2. Sending bulk emails
+### 2. Sending Bulk Emails
 
 ```ts
 import { sendBulkEmails, EmailOptions } from './email-service';
@@ -66,19 +75,41 @@ const recipients = [
 
 const template: Omit<EmailOptions, 'to'> = {
   subject: 'Monthly Newsletter',
-  body: 'Here is our monthly newsletter.',
-  html: '<h1>Monthly Newsletter</h1><p>Here is our monthly newsletter.</p>',
+  body: 'Hello, here is our monthly newsletter.',
+  html: '<h1>Monthly Newsletter</h1><p>Enjoy!</p>',
 };
 
-const results = await sendBulkEmails(recipients, template);
+async function main() {
+  const results = await sendBulkEmails(recipients, template);
+  results.forEach((res, idx) => {
+    if (res.success) {
+      console.log(`✅ Sent to ${recipients[idx]} (msgId: ${res.messageId})`);
+    } else {
+      console.warn(`❌ Failed to send to ${recipients[idx]}: ${res.error}`);
+    }
+  });
+}
 
-results.forEach((res, idx) => {
-  if (res.success) {
-    console.log(`Email to ${recipients[idx]} sent (ID: ${res.messageId})`);
-  } else {
-    console.warn(`Email to ${recipients[idx]} failed: ${res.error}`);
+main();
+```
+
+### 3. Handling Errors
+
+```ts
+import { sendEmail } from './email-service';
+
+async function main() {
+  const result = await sendEmail({
+    to: ['invalid-email'],
+    subject: 'Test',
+    body: 'This will fail',
+  });
+
+  if (!result.success) {
+    // Graceful fallback or retry logic
+    console.error('Email failed:', result.error);
   }
-});
+}
 ```
 
 ---
@@ -90,19 +121,19 @@ results.forEach((res, idx) => {
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `options` | `EmailOptions` | Email configuration object. |
-| `options.to` | `string[]` | **Required.** List of primary recipients. |
-| `options.subject` | `string` | **Required.** Email subject line. |
-| `options.body` | `string` | **Required.** Plain‑text body of the email. |
-| `options.html` | `string` | Optional HTML body. |
-| `options.cc` | `string[]` | Optional carbon‑copy recipients. |
-| `options.bcc` | `string[]` | Optional blind carbon‑copy recipients. |
-| `options.attachments` | `Attachment[]` | Optional list of attachments. |
+| `options.to` | `string[]` | **Required**. List of primary recipients. |
+| `options.subject` | `string` | **Required**. Email subject line. |
+| `options.body` | `string` | **Required**. Plain‑text body. |
+| `options.html` | `string` | Optional. HTML body. |
+| `options.cc` | `string[]` | Optional. Carbon‑copy recipients. |
+| `options.bcc` | `string[]` | Optional. Blind‑carbon‑copy recipients. |
+| `options.attachments` | `Attachment[]` | Optional. List of attachments. |
 
 ### `sendBulkEmails(recipients: string[], template: Omit<EmailOptions, 'to'>)`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `recipients` | `string[]` | Array of email addresses to send the template to. |
+| `recipients` | `string[]` | Array of email addresses to send to. |
 | `template` | `Omit<EmailOptions, 'to'>` | Email template that will be applied to each recipient. All fields except `to` are reused. |
 
 ---
@@ -114,46 +145,45 @@ results.forEach((res, idx) => {
 | Property | Type | Description |
 |----------|------|-------------|
 | `success` | `boolean` | `true` if the email was sent successfully. |
-| `messageId` | `string` | **Optional.** Unique identifier returned by the provider. Present only when `success` is `true`. |
-| `error` | `string` | **Optional.** Error message if the send failed. Present only when `success` is `false`. |
+| `messageId` | `string` | **Present when `success` is `true`**. Identifier returned by the provider. |
+| `error` | `string` | **Present when `success` is `false`**. Human‑readable error message. |
 
 ### `sendBulkEmails`
 
-Returns an array of `EmailResult` objects, one per recipient, preserving the order of the `recipients` array. Each element follows the same structure as the result of `sendEmail`.
+Returns an array of `EmailResult` objects, one per recipient, preserving the order of the input `recipients` array.
 
 ---
 
-## Extending the Provider
+## Internal Helpers (Not Exported)
 
-The module currently uses a stub `sendViaProvider` that simply returns a fake message ID.  
-To integrate with a real provider:
+| Function | Purpose |
+|----------|---------|
+| `isValidEmail(email: string): boolean` | Simple regex check for RFC‑5322 compliant email addresses. |
+| `sendViaProvider(options: EmailOptions): Promise<string>` | Simulates sending an email and returns a fake message ID. Replace with real provider logic. |
+
+---
+
+## Extending / Customizing
+
+| Feature | How to Extend |
+|---------|---------------|
+| **Real Provider** | Replace `sendViaProvider` with an SDK call (SendGrid, SES, etc.). |
+| **Advanced Validation** | Override `isValidEmail` or add additional checks before calling `sendEmail`. |
+| **Concurrency** | `sendBulkEmails` currently sends sequentially. For high‑volume scenarios, consider `Promise.all` or a concurrency limiter. |
+| **Logging** | Add instrumentation inside `sendEmail` or `sendBulkEmails` to log message IDs or errors. |
+| **Retry Logic** | Wrap `sendEmail` in a retry helper that retries on transient errors. |
+
+---
+
+## Quick Reference
 
 ```ts
-async function sendViaProvider(options: EmailOptions): Promise<string> {
-  // Example with SendGrid
-  const sgMail = require('@sendgrid/mail');
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Types
+interface EmailOptions { ... }
+interface Attachment { ... }
+interface EmailResult { ... }
 
-  const msg = {
-    to: options.to,
-    cc: options.cc,
-    bcc: options.bcc,
-    from: 'no-reply@example.com',
-    subject: options.subject,
-    text: options.body,
-    html: options.html,
-    attachments: options.attachments?.map(att => ({
-      content: att.content instanceof Buffer ? att.content.toString('base64') : Buffer.from(att.content).toString('base64'),
-      filename: att.filename,
-      type: att.contentType,
-      disposition: 'attachment',
-      contentId: att.filename,
-    })),
-  };
-
-  const response = await sgMail.send(msg);
-  return response[0].headers['x-message-id'];
-}
-```
-
-Replace the stub with the above implementation (or any other provider) and the rest of the module will work unchanged.
+// Functions
+async function sendEmail(options: EmailOptions): Promise<EmailResult>
+async function sendBulkEmails(
+  recipients: string[],
