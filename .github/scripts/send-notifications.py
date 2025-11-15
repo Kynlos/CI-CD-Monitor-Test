@@ -56,7 +56,8 @@ class NotificationService:
                      changed_files: List[str], 
                      breaking_changes: List[Dict],
                      changelog_entries: List[Dict],
-                     wiki_pages: List[str]) -> bool:
+                     wiki_pages: List[str],
+                     analysis_summary: Optional[Dict] = None) -> bool:
         """Send formatted notification to Discord"""
         if not DISCORD_WEBHOOK:
             print("⚠️  No Discord webhook URL configured")
@@ -180,7 +181,8 @@ class NotificationService:
                    changed_files: List[str],
                    breaking_changes: List[Dict],
                    changelog_entries: List[Dict],
-                   wiki_pages: List[str]) -> bool:
+                   wiki_pages: List[str],
+                   analysis_summary: Optional[Dict] = None) -> bool:
         """Send formatted notification to Slack"""
         if not SLACK_WEBHOOK:
             print("⚠️  No Slack webhook URL configured")
@@ -403,16 +405,20 @@ def load_workflow_data():
         # Indicates breaking changes were detected
         data['breaking_changes'] = [{'symbol': 'API', 'message': 'Breaking changes detected'}]
     
-    # Load wiki summary
+    # Load wiki summary - only get pages that were ACTUALLY updated
     if os.path.exists('wiki_summary.md'):
         with open('wiki_summary.md', 'r') as f:
             content = f.read()
-            # Extract wiki pages from summary
+            # Only look at "Updates Made" section for actually changed pages
+            in_updates = False
             for line in content.split('\n'):
-                if line.startswith('### ') and not line.startswith('### **'):
-                    page_name = line.replace('### ', '').strip()
-                    if page_name:
-                        data['wiki_pages'].append(page_name)
+                if '## Updates Made' in line:
+                    in_updates = True
+                elif in_updates and line.startswith('- `'):
+                    # Extract page name from: - `file.ts` → [Page-Name]
+                    match = re.search(r'\[([^\]]+)\]', line)
+                    if match:
+                        data['wiki_pages'].append(match.group(1))
     
     # Try to load more detailed breaking changes if available
     try:
@@ -514,7 +520,8 @@ def main():
             data['changed_files'],
             data['breaking_changes'],
             data['changelog_entries'],
-            data['wiki_pages']
+            data['wiki_pages'],
+            data.get('analysis_summary')
         )
         results.append(('Discord', success))
     
@@ -524,7 +531,8 @@ def main():
             data['changed_files'],
             data['breaking_changes'],
             data['changelog_entries'],
-            data['wiki_pages']
+            data['wiki_pages'],
+            data.get('analysis_summary')
         )
         results.append(('Slack', success))
     
