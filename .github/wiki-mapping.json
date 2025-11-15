@@ -1,11 +1,12 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-14T23:44:51.255251",
+  "last_updated": "2025-11-15T18:45:30.578432",
   "description": "Persistent mapping of source files to Wiki pages. DO NOT DELETE - used by wiki-manager.py to ensure consistency.",
   "file_to_page": {
     "email-service.ts": "Email-Service",
     "agentic-bot.ts": "Agentic-Bot",
-    "generate-docs.ts": "Documentation-Generation"
+    "generate-docs.ts": "Documentation-Generation",
+    "send-notifications.ts": "Notification-Service"
   },
   "page_metadata": {
     "Email-Service": {
@@ -13,21 +14,28 @@
       "files": [
         "email-service.ts"
       ],
-      "last_updated": "2025-11-14T23:44:50.927519"
+      "last_updated": "2025-11-15T18:45:30.578078"
     },
     "Agentic-Bot": {
       "created": "2025-11-14T23:44:51.106934",
       "files": [
         "agentic-bot.ts"
       ],
-      "last_updated": "2025-11-14T23:44:51.106941"
+      "last_updated": "2025-11-15T18:45:30.578248"
     },
     "Documentation-Generation": {
       "created": "2025-11-14T23:44:51.255242",
       "files": [
         "generate-docs.ts"
       ],
-      "last_updated": "2025-11-14T23:44:51.255248"
+      "last_updated": "2025-11-15T18:45:30.578428"
+    },
+    "Notification-Service": {
+      "created": "2025-11-15T18:45:30.577850",
+      "files": [
+        "send-notifications.ts"
+      ],
+      "last_updated": "2025-11-15T18:45:30.577857"
     }
   }
 }
