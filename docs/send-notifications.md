@@ -2,117 +2,123 @@
 
 *Auto-generated from `.github/scripts/send-notifications.py`*
 
-API Documentation for `send-notifications.py`
+API Documentation for Notification Service
 ==============================================
 
 ### Overview
 
-This module provides a notification service that sends updates to Discord and Slack. It handles character limits and formats messages beautifully. The service is designed to be used in a GitHub Actions workflow, where it can send notifications about changes, breaking changes, and wiki updates.
+This module provides a notification service that sends updates to Discord, Slack, and Pushbullet. It handles character limits and formats messages beautifully. The service is designed to be used in a GitHub Actions workflow to notify teams about changes, breaking changes, and updates to wiki pages.
 
 ### Exports
 
-The following functions and classes are exported by this module:
-
-* `NotificationService`: A class that provides methods for sending notifications to Discord and Slack.
-* `load_workflow_data`: A function that loads data from workflow artifacts.
-* `main`: The main entry point of the module.
+* `NotificationService` class: Handles sending notifications to Discord, Slack, and Pushbullet.
+* `load_workflow_data` function: Loads data from workflow artifacts.
+* `main` function: The entry point of the script.
 
 ### Usage Examples
 
-#### Sending a Discord Notification
+#### Sending Notifications
 
 ```python
 service = NotificationService()
-changed_files = ['file1.txt', 'file2.txt']
-breaking_changes = [{'symbol': 'API', 'message': 'Breaking changes detected'}]
-changelog_entries = []
-wiki_pages = []
+data = load_workflow_data()
 
-success = service.send_discord(changed_files, breaking_changes, changelog_entries, wiki_pages)
-```
+# Send Discord notification
+service.send_discord(
+    data['changed_files'],
+    data['breaking_changes'],
+    data['changelog_entries'],
+    data['wiki_pages']
+)
 
-#### Sending a Slack Notification
+# Send Slack notification
+service.send_slack(
+    data['changed_files'],
+    data['breaking_changes'],
+    data['changelog_entries'],
+    data['wiki_pages']
+)
 
-```python
-service = NotificationService()
-changed_files = ['file1.txt', 'file2.txt']
-breaking_changes = [{'symbol': 'API', 'message': 'Breaking changes detected'}]
-changelog_entries = []
-wiki_pages = []
-
-success = service.send_slack(changed_files, breaking_changes, changelog_entries, wiki_pages)
+# Send Pushbullet notification
+service.send_pushbullet(
+    data['changed_files'],
+    data['breaking_changes'],
+    data['changelog_entries'],
+    data['wiki_pages']
+)
 ```
 
 #### Loading Workflow Data
 
 ```python
 data = load_workflow_data()
-print(data['changed_files'])
-print(data['breaking_changes'])
-print(data['wiki_pages'])
+print(data['changed_files'])  # List of changed files
+print(data['breaking_changes'])  # List of breaking changes
+print(data['changelog_entries'])  # List of changelog entries
+print(data['wiki_pages'])  # List of wiki pages
 ```
 
 ### Parameters
 
-#### `NotificationService`
+#### `NotificationService` class
 
-* `None`: The constructor takes no parameters.
+* `changed_files`: List of changed files.
+* `breaking_changes`: List of breaking changes.
+* `changelog_entries`: List of changelog entries.
+* `wiki_pages`: List of wiki pages.
 
-#### `send_discord`
+#### `load_workflow_data` function
 
-* `changed_files`: A list of files that have changed.
-* `breaking_changes`: A list of breaking changes.
-* `changelog_entries`: A list of changelog entries.
-* `wiki_pages`: A list of wiki pages that have been updated.
+* No parameters.
 
-#### `send_slack`
+#### `send_discord` method
 
-* `changed_files`: A list of files that have changed.
-* `breaking_changes`: A list of breaking changes.
-* `changelog_entries`: A list of changelog entries.
-* `wiki_pages`: A list of wiki pages that have been updated.
+* `changed_files`: List of changed files.
+* `breaking_changes`: List of breaking changes.
+* `changelog_entries`: List of changelog entries.
+* `wiki_pages`: List of wiki pages.
 
-#### `load_workflow_data`
+#### `send_slack` method
 
-* `None`: The function takes no parameters.
+* `changed_files`: List of changed files.
+* `breaking_changes`: List of breaking changes.
+* `changelog_entries`: List of changelog entries.
+* `wiki_pages`: List of wiki pages.
+
+#### `send_pushbullet` method
+
+* `changed_files`: List of changed files.
+* `breaking_changes`: List of breaking changes.
+* `changelog_entries`: List of changelog entries.
+* `wiki_pages`: List of wiki pages.
 
 ### Return Values
 
-#### `send_discord`
+#### `send_discord` method
 
 * `bool`: Whether the notification was sent successfully.
 
-#### `send_slack`
+#### `send_slack` method
 
 * `bool`: Whether the notification was sent successfully.
 
-#### `load_workflow_data`
+#### `send_pushbullet` method
 
-* `dict`: A dictionary containing the loaded data, with the following keys:
-	+ `changed_files`: A list of files that have changed.
-	+ `breaking_changes`: A list of breaking changes.
-	+ `changelog_entries`: A list of changelog entries.
-	+ `wiki_pages`: A list of wiki pages that have been updated.
+* `bool`: Whether the notification was sent successfully.
 
-#### `main`
+#### `load_workflow_data` function
 
-* `None`: The function does not return a value.
+* `dict`: A dictionary containing the loaded data.
 
-### Classes
+### Environment Variables
 
-#### `NotificationService`
+The following environment variables are required:
 
-This class provides methods for sending notifications to Discord and Slack. It has the following attributes:
-
-* `repo`: The name of the repository.
-* `commit_sha`: The SHA of the commit.
-* `commit_message`: The commit message.
-* `actor`: The actor who made the commit.
-* `run_url`: The URL of the workflow run.
-
-The class has the following methods:
-
-* `send_discord`: Sends a notification to Discord.
-* `send_slack`: Sends a notification to Slack.
-* `_clean_commit_message`: Cleans the commit message by removing Amp-specific lines.
-* `truncate`: Truncates a string to fit within a limit.
+* `DISCORD_WEBHOOK_URL`: The Discord webhook URL.
+* `SLACK_WEBHOOK_URL`: The Slack webhook URL.
+* `PUSHBULLET_TOKEN`: The Pushbullet token.
+* `GITHUB_REPOSITORY`: The GitHub repository name.
+* `GITHUB_SHA`: The GitHub commit SHA.
+* `GITHUB_ACTOR`: The GitHub actor name.
+* `GITHUB_RUN_ID`: The GitHub run ID.
+* `COMMIT_MESSAGE`: The commit message.
