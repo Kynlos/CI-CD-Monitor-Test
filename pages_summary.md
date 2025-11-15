@@ -1,12 +1,20 @@
 # GitHub Pages Update Summary
 
-**Changes Made:** 2
+**Changes Made:** 4
 
-### pages-manager.ts → api/pages-manager.md
+### auth.ts → api/authentication.md
 - **Action:** CREATE
-- **Reasoning:** pages-manager module
+- **Reasoning:** The auth.ts module introduces a distinct authentication API that is not covered by any existing page. Creating a dedicated page under the API Reference keeps related functionality grouped and makes it easy for users to find authentication-specific documentation.
 
-### wiki-manager.ts → guides/wiki-manager.md
+### payment-processor.ts → api/payment-processor.md
 - **Action:** CREATE
-- **Reasoning:** The wiki-manager script is a standalone utility that helps route documentation to GitHub Wiki pages. It does not belong to the API reference but serves as a guide for contributors on how to automate wiki updates. Creating a dedicated guide page under the 'guides' section keeps the documentation organized and makes the tool discoverable for users setting up CI pipelines.
+- **Reasoning:** The payment-processor module is a new, distinct API component not covered by existing pages. Creating a dedicated page under the API section keeps documentation organized and allows users to find all payment-related functions and interfaces in one place.
+
+### email-service.ts → api/email-service.md
+- **Action:** CREATE
+- **Reasoning:** The Email Service module is a distinct, provider‑agnostic component not covered by any existing API pages. Creating a dedicated page under the API Reference keeps the documentation organized and makes it easy for developers to find all email‑related functions and interfaces in one place.
+
+### database.ts → api/database.md
+- **Action:** CREATE
+- **Reasoning:** The database module is a distinct API component not currently documented. Adding a dedicated page under the API Reference keeps the documentation organized and allows users to find database-related types and functions easily.
 

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-15T23:03:21.725111",
+  "last_updated": "2025-11-15T23:21:07.181121",
   "description": "Persistent mapping of source files to Wiki pages. DO NOT DELETE - used by wiki-manager.py to ensure consistency.",
   "file_to_page": {
     "email-service.ts": "Email-Service",
@@ -11,7 +11,10 @@
     "PR-BUMP-GUIDE.ts": "Pull-Request-Bump-Guide",
     "wiki-manager.ts": "Wiki-Manager",
     "code-analyzer.ts": "Code-Analyzer",
-    "pages-manager.ts": "Pages-Manager"
+    "pages-manager.ts": "Pages-Manager",
+    "auth.ts": "Authentication-API",
+    "payment-processor.ts": "Payment-Processor",
+    "database.ts": "Database-Layer"
   },
   "page_metadata": {
     "Email-Service": {
@@ -19,7 +22,7 @@
       "files": [
         "email-service.ts"
       ],
-      "last_updated": "2025-11-15T18:49:11.216611"
+      "last_updated": "2025-11-15T23:21:06.894799"
     },
     "Agentic-Bot": {
       "created": "2025-11-14T23:44:51.106934",
@@ -70,6 +73,27 @@
         "pages-manager.ts"
       ],
       "last_updated": "2025-11-15T23:03:21.724823"
+    },
+    "Authentication-API": {
+      "created": "2025-11-15T23:21:06.645257",
+      "files": [
+        "auth.ts"
+      ],
+      "last_updated": "2025-11-15T23:21:06.645264"
+    },
+    "Payment-Processor": {
+      "created": "2025-11-15T23:21:06.894591",
+      "files": [
+        "payment-processor.ts"
+      ],
+      "last_updated": "2025-11-15T23:21:06.894598"
+    },
+    "Database-Layer": {
+      "created": "2025-11-15T23:21:07.181110",
+      "files": [
+        "database.ts"
+      ],
+      "last_updated": "2025-11-15T23:21:07.181117"
     }
   }
 }
