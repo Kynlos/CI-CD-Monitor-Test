@@ -25,9 +25,25 @@ class NotificationService:
     def __init__(self):
         self.repo = os.environ.get('GITHUB_REPOSITORY', 'Unknown Repo')
         self.commit_sha = os.environ.get('GITHUB_SHA', 'unknown')[:7]
-        self.commit_message = os.environ.get('COMMIT_MESSAGE', 'No message')
+        self.commit_message = self._clean_commit_message(os.environ.get('COMMIT_MESSAGE', 'No message'))
         self.actor = os.environ.get('GITHUB_ACTOR', 'Unknown')
         self.run_url = f"https://github.com/{self.repo}/actions/runs/{os.environ.get('GITHUB_RUN_ID', '')}"
+    
+    def _clean_commit_message(self, message: str) -> str:
+        """Remove Amp and other metadata from commit message"""
+        lines = message.split('\n')
+        cleaned_lines = []
+        
+        for line in lines:
+            # Skip Amp-specific lines
+            if line.startswith('Amp-Thread-ID:'):
+                continue
+            if line.startswith('Co-authored-by: Amp'):
+                continue
+            # Add other lines
+            cleaned_lines.append(line)
+        
+        return '\n'.join(cleaned_lines).strip()
         
     def truncate(self, text: str, limit: int) -> str:
         """Truncate text to fit within limit"""
