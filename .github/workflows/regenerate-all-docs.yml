@@ -1,0 +1,164 @@
+name: Regenerate All Documentation
+
+on:
+  workflow_dispatch:  # Manual trigger only - run anytime you need
+    inputs:
+      skip_analysis:
+        description: 'Skip code analysis (faster)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install requests
+      
+      - name: Find all code files
+        run: |
+          echo "🔍 Finding all code files in repository..."
+          
+          # Find all supported code files
+          find . -type f \( \
+            -name "*.ts" -o -name "*.tsx" -o \
+            -name "*.js" -o -name "*.jsx" -o \
+            -name "*.py" -o \
+            -name "*.go" -o \
+            -name "*.rs" -o \
+            -name "*.java" -o \
+            -name "*.cpp" -o -name "*.cc" -o -name "*.c" -o \
+            -name "*.h" -o -name "*.hpp" \
+          \) \
+            ! -path "./.git/*" \
+            ! -path "./node_modules/*" \
+            ! -path "./.github/*" \
+            ! -path "./vendor/*" \
+            ! -path "./dist/*" \
+            ! -path "./build/*" \
+            > changed_files.txt
+          
+          echo "Found $(wc -l < changed_files.txt) code files:"
+          head -20 changed_files.txt
+          if [ $(wc -l < changed_files.txt) -gt 20 ]; then
+            echo "... and $(( $(wc -l < changed_files.txt) - 20 )) more"
+          fi
+      
+      - name: Generate documentation for all files
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          echo "📝 Generating documentation..."
+          python .github/scripts/generate-docs.py
+      
+      - name: Run code analysis
+        if: ${{ !inputs.skip_analysis }}
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          echo "📊 Analyzing code quality and security..."
+          python .github/scripts/code-analyzer.py
+      
+      - name: Checkout Wiki repository
+        uses: actions/checkout@v4
+        continue-on-error: true
+        id: checkout_wiki
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Route to Wiki
+        if: steps.checkout_wiki.outcome == 'success'
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          WIKI_DIR: wiki
+        run: |
+          echo "📚 Routing documentation to Wiki..."
+          python .github/scripts/wiki-manager.py
+      
+      - name: Update Wiki
+        if: steps.checkout_wiki.outcome == 'success'
+        run: |
+          cd wiki
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "docs: Regenerate all wiki documentation"
+            git push
+            echo "✅ Wiki updated"
+          else
+            echo "ℹ️  No wiki changes"
+          fi
+      
+      - name: Route to GitHub Pages
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          echo "📄 Routing documentation to GitHub Pages..."
+          python .github/scripts/pages-manager.py
+      
+      - name: Commit all documentation
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          git add docs/ \
+                  docs-site/ \
+                  code-analysis/ \
+                  CHANGELOG.md \
+                  .github/wiki-mapping.json \
+                  .github/pages-mapping.json \
+                  analysis_report.md \
+                  analysis_results.json \
+                  pages_summary.md \
+                  wiki_summary.md \
+                  || true
+          
+          if ! git diff --staged --quiet; then
+            git pull --rebase origin main || true
+            git commit -m "docs: Regenerate all documentation [skip ci]"
+            git push
+            echo "✅ Documentation committed"
+          else
+            echo "ℹ️  No changes to commit"
+          fi
+      
+      - name: Summary
+        run: |
+          echo ""
+          echo "=================================================="
+          echo "✅ DOCUMENTATION REGENERATED!"
+          echo "=================================================="
+          echo ""
+          echo "📊 Generated for $(wc -l < changed_files.txt) code files"
+          echo ""
+          echo "🔗 View documentation:"
+          echo "  • GitHub Pages: https://${{ github.repository_owner }}.github.io/CI-CD-Monitor-Test/"
+          echo "  • Wiki: https://github.com/${{ github.repository }}/wiki"
+          echo "  • Analysis: https://github.com/${{ github.repository }}/tree/main/code-analysis"
+          echo ""
+          echo "💡 This workflow can be run anytime to refresh all docs!"
+          echo ""
