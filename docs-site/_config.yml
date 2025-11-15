@@ -2,8 +2,8 @@
 
 title: CI/CD Monitor Test Documentation
 description: Automated API documentation and code analysis
-baseurl: ""
-url: "https://kynlos.github.io/CI-CD-Monitor-Test"
+baseurl: "/CI-CD-Monitor-Test"
+url: "https://kynlos.github.io"
 repository: Kynlos/CI-CD-Monitor-Test
 
 # Theme - use remote theme for GitHub Pages
