@@ -6,11 +6,13 @@ category: Modules
 
 # Modules
 
-Module-level architecture and design documentation.
+Module architecture and design documentation.
 
 ## Available Modules
 
-Documentation will be auto-generated as modules are added to the codebase.
+*No module documentation yet. Module-level docs will be auto-generated as the codebase evolves.*
+
+Modules provide architectural overview, design decisions, and how different components interact.
 
 ---
 

@@ -10,7 +10,9 @@ User-facing feature documentation and guides.
 
 ## Available Features
 
-Documentation will be auto-generated as features are added to the codebase.
+*No feature documentation yet. Feature guides will be auto-generated as you develop.*
+
+Features provide user-facing documentation on how to use and configure the system.
 
 ---
 

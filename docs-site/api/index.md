@@ -6,18 +6,20 @@ category: API Reference
 
 # API Reference
 
-Complete API documentation for all modules.
+Low-level API documentation for all functions, classes, and interfaces.
 
 ## Available APIs
 
-- [Authentication](authentication.md) - Auto-generated API documentation
-- [Database](database.md) - Auto-generated API documentation
-- [Email Service](email-service.md) - Auto-generated API documentation
-- [Llm](llm.md) - Auto-generated API documentation
-- [Notifications](notifications.md) - Auto-generated API documentation
-- [Pages Manager](pages-manager.md) - Auto-generated API documentation
-- [Payment Processor](payment-processor.md) - Auto-generated API documentation
-- [Payments](payments.md) - Auto-generated API documentation
+- **[Authentication](authentication.md)** - Technical API documentation
+- **[Database](database.md)** - Technical API documentation
+- **[Email Service](email-service.md)** - Technical API documentation
+- **[Llm](llm.md)** - Technical API documentation
+- **[Notifications](notifications.md)** - Technical API documentation
+- **[Pages Manager](pages-manager.md)** - Technical API documentation
+- **[Payment Processor](payment-processor.md)** - Technical API documentation
+- **[Payments](payments.md)** - Technical API documentation
+
+**Total:** 8 API pages
 
 ---
 
