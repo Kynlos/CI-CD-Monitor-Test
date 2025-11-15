@@ -1,6 +1,6 @@
 ## 📚 Wiki Organization Summary
 
-**Total Pages:** 11
+**Total Pages:** 12
 
 ### Agentic-Bot
 - **Files:** 1
@@ -10,7 +10,7 @@
 
 ### Authentication-API
 - **Files:** 1
-- **Last Updated:** 2025-11-15T23:25:54.178658
+- **Last Updated:** 2025-11-15T23:41:17.268228
 - **Contains:**
   - `auth.ts`
 
@@ -22,7 +22,7 @@
 
 ### Database-Layer
 - **Files:** 1
-- **Last Updated:** 2025-11-15T23:25:54.179232
+- **Last Updated:** 2025-11-15T23:41:17.268795
 - **Contains:**
   - `database.ts`
 
@@ -34,9 +34,15 @@
 
 ### Email-Service
 - **Files:** 1
-- **Last Updated:** 2025-11-15T23:25:54.179052
+- **Last Updated:** 2025-11-15T23:41:17.268605
 - **Contains:**
   - `email-service.ts`
+
+### Llm
+- **Files:** 1
+- **Last Updated:** 2025-11-15T23:33:27.679932
+- **Contains:**
+  - `llm.ts`
 
 ### Notification-Service
 - **Files:** 2
@@ -47,13 +53,13 @@
 
 ### Pages-Manager
 - **Files:** 1
-- **Last Updated:** 2025-11-15T23:25:22.495740
+- **Last Updated:** 2025-11-15T23:37:52.880290
 - **Contains:**
   - `pages-manager.ts`
 
 ### Payment-Processor
 - **Files:** 1
-- **Last Updated:** 2025-11-15T23:25:54.178868
+- **Last Updated:** 2025-11-15T23:41:17.268428
 - **Contains:**
   - `payment-processor.ts`
 
