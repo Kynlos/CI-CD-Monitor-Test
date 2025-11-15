@@ -1,13 +1,14 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-15T23:25:56.783304",
+  "last_updated": "2025-11-15T23:33:28.430421",
   "file_to_page": {
     "pages-manager.ts": "api/pages-manager.md",
     "wiki-manager.ts": "guides/wiki-manager.md",
     "auth.ts": "api/authentication.md",
     "payment-processor.ts": "api/payments.md",
     "email-service.ts": "api/notifications.md",
-    "database.ts": "api/database.md"
+    "database.ts": "api/database.md",
+    "llm.ts": "api/llm.md"
   },
   "page_metadata": {
     "api/pages-manager.md": {
@@ -72,6 +73,14 @@
         "email-service.ts"
       ],
       "last_updated": "2025-11-15T23:25:56.179468",
+      "last_action": "create"
+    },
+    "api/llm.md": {
+      "created": "2025-11-15T23:33:28.429835",
+      "sources": [
+        "llm.ts"
+      ],
+      "last_updated": "2025-11-15T23:33:28.429843",
       "last_action": "create"
     }
   },
