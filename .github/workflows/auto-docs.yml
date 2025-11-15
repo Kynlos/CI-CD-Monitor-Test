@@ -107,14 +107,25 @@ jobs:
           script: |
             const fs = require('fs');
             
+            let fullComment = '';
+            
+            // Add documentation
             if (fs.existsSync('doc_output.md')) {
-              const docContent = fs.readFileSync('doc_output.md', 'utf8');
-              
+              fullComment += fs.readFileSync('doc_output.md', 'utf8');
+            }
+            
+            // Add code analysis report
+            if (fs.existsSync('analysis_report.md')) {
+              fullComment += '\n\n---\n\n';
+              fullComment += fs.readFileSync('analysis_report.md', 'utf8');
+            }
+            
+            if (fullComment) {
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                body: docContent
+                body: fullComment
               });
             }
       
@@ -190,9 +201,11 @@ jobs:
           [ -d "docs" ] && git add docs/
           [ -f "CHANGELOG.md" ] && git add CHANGELOG.md
           [ -f ".github/wiki-mapping.json" ] && git add .github/wiki-mapping.json
+          [ -f "analysis_report.md" ] && git add analysis_report.md
+          [ -f "analysis_results.json" ] && git add analysis_results.json
           
           if ! git diff --staged --quiet; then
-            git commit -m "docs: Auto-update documentation, changelog, and wiki mapping [skip ci]"
+            git commit -m "docs: Auto-update documentation, changelog, wiki mapping, and code analysis [skip ci]"
             
             # Pull and rebase in case of conflicts
             git pull --rebase origin main || true

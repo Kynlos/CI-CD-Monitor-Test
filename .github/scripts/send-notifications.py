@@ -337,6 +337,15 @@ class NotificationService:
         if wiki_pages:
             body_parts.append(f"Wiki: {len(wiki_pages)} page(s) updated")
         
+        # Add analysis summary
+        analysis = data.get('analysis_summary')
+        if analysis:
+            body_parts.append(f"\nQuality: {analysis['avg_quality_score']}/100")
+            if analysis['total_vulnerabilities'] > 0:
+                body_parts.append(f"⚠️ {analysis['total_vulnerabilities']} security issues")
+            if analysis['total_performance_issues'] > 0:
+                body_parts.append(f"🐌 {analysis['total_performance_issues']} performance issues")
+        
         body = '\n'.join(body_parts)
         
         # Pushbullet API
@@ -380,7 +389,8 @@ def load_workflow_data():
         'changed_files': [],
         'breaking_changes': [],
         'changelog_entries': [],
-        'wiki_pages': []
+        'wiki_pages': [],
+        'analysis_summary': None
     }
     
     # Load changed files
@@ -433,6 +443,28 @@ def load_workflow_data():
     except:
         pass
     
+    # Load code analysis results
+    try:
+        if os.path.exists('analysis_results.json'):
+            with open('analysis_results.json', 'r') as f:
+                analysis_data = json.load(f)
+                
+                if analysis_data:
+                    # Calculate summary
+                    avg_score = sum(r['quality_score']['total'] for r in analysis_data) / len(analysis_data)
+                    total_vulns = sum(len(r['security_vulnerabilities']) for r in analysis_data)
+                    total_perf = sum(len(r['performance_issues']) for r in analysis_data)
+                    
+                    data['analysis_summary'] = {
+                        'files_analyzed': len(analysis_data),
+                        'avg_quality_score': round(avg_score, 1),
+                        'total_vulnerabilities': total_vulns,
+                        'total_performance_issues': total_perf,
+                        'details': analysis_data
+                    }
+    except Exception as e:
+        print(f"Warning: Could not load analysis results: {e}")
+    
     return data
 
 
@@ -463,6 +495,15 @@ def main():
     
     # Initialize service
     service = NotificationService()
+    
+    # Print analysis summary if available
+    if data.get('analysis_summary'):
+        summary = data['analysis_summary']
+        print(f"\n📊 Code Analysis Summary:")
+        print(f"   Files: {summary['files_analyzed']}")
+        print(f"   Avg Quality: {summary['avg_quality_score']}/100")
+        print(f"   Security Issues: {summary['total_vulnerabilities']}")
+        print(f"   Performance Issues: {summary['total_performance_issues']}")
     
     # Send notifications
     results = []
