@@ -13,10 +13,8 @@ Complete API documentation for all modules.
 - [Authentication](authentication.md) - Auto-generated API documentation
 - [Database](database.md) - Auto-generated API documentation
 - [Email Service](email-service.md) - Auto-generated API documentation
-- [Notifications](notifications.md) - Auto-generated API documentation
 - [Pages Manager](pages-manager.md) - Auto-generated API documentation
 - [Payment Processor](payment-processor.md) - Auto-generated API documentation
-- [Payments](payments.md) - Auto-generated API documentation
 
 ---
 
