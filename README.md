@@ -75,6 +75,13 @@ This system revolutionizes code documentation by automatically:
 - **Security** - Role-based permissions, audit trails
 - **Extensibility** - Easy to add new platforms or features
 
+### 🔬 **Code Analysis & Quality**
+- **Multi-Language Support** - TypeScript, JavaScript, Python, Go, Rust, Java, C/C++
+- **Quality Scoring** - 0-100 score with documentation, complexity, maintainability metrics
+- **Security Scanning** - Detects hardcoded secrets, SQL injection, XSS, command injection
+- **Performance Analysis** - Identifies O(n²) patterns, nested loops, large functions
+- **Automated Reports** - Detailed markdown reports with actionable insights
+
 ---
 
 ## 🚀 Quick Start
@@ -110,7 +117,181 @@ That's it! Your first documentation will be auto-generated on the next commit.
 
 ## 🎨 Detailed Features
 
-### 1. 🔍 Breaking Change Detection
+### 1. 🌍 Multi-Language Support
+
+Now supports 7+ programming languages with intelligent analysis:
+
+**Supported Languages:**
+- **TypeScript/JavaScript** (.ts, .tsx, .js, .jsx)
+- **Python** (.py)
+- **Go** (.go)
+- **Rust** (.rs)
+- **Java** (.java)
+- **C/C++** (.cpp, .cc, .c, .h, .hpp)
+
+**Features per Language:**
+- Function/class extraction
+- Complexity analysis
+- Documentation generation
+- Security scanning
+- Performance analysis
+
+**Example:**
+```go
+// Go code automatically documented
+func ProcessPayment(amount int, method PaymentMethod) error {
+    // Automatically analyzed for:
+    // - Quality score
+    // - Security vulnerabilities
+    // - Performance issues
+    // - Breaking changes
+}
+```
+
+### 2. 📊 Code Quality Scoring
+
+Every file gets a comprehensive 0-100 quality score:
+
+**Scoring Breakdown:**
+- **Documentation** (30 pts) - Comment coverage percentage
+- **Complexity** (30 pts) - Cyclomatic complexity analysis
+- **Maintainability** (40 pts) - Line length, function size, nesting depth
+
+**Letter Grades:**
+```
+90-100: A+/A  (Excellent)
+80-89:  A-/B+ (Good)
+70-79:  B/B-  (Fair)
+60-69:  C+/C  (Needs Improvement)
+<60:    C-/D  (Poor)
+```
+
+**Example Report:**
+```markdown
+## Quality Scores
+| File | Score | Grade | Doc | Complexity | Maint |
+|------|-------|-------|-----|------------|-------|
+| auth.ts | 85/100 | A | 25/30 | 28/30 | 32/40 |
+| database.ts | 72/100 | B | 18/30 | 26/30 | 28/40 |
+```
+
+**What's Analyzed:**
+- Comment density and coverage
+- Decision point count (if/else/for/while)
+- Average function length
+- Maximum nesting depth
+- Long line count (>120 chars)
+
+### 3. 🔒 Security Vulnerability Scanning
+
+Detects common security issues across all languages:
+
+**Detection Categories:**
+
+**1. Hardcoded Secrets** (HIGH)
+```python
+# ❌ Detected
+password = "mySecretPass123"
+api_key = "sk_live_abc123xyz789"
+```
+
+**2. SQL Injection** (HIGH)
+```python
+# ❌ Detected
+query = "SELECT * FROM users WHERE id = " + user_id
+execute(f"SELECT * FROM {table_name}")
+```
+
+**3. XSS Vulnerabilities** (MEDIUM)
+```javascript
+// ❌ Detected
+element.innerHTML = userInput;
+eval(userCode);
+```
+
+**4. Path Traversal** (MEDIUM)
+```python
+# ❌ Detected
+open("/uploads/" + filename)
+```
+
+**5. Command Injection** (HIGH)
+```python
+# ❌ Detected
+os.system(user_command)
+subprocess.run(cmd, shell=True)
+```
+
+**Report Output:**
+```markdown
+## 🚨 Security Vulnerabilities
+
+### auth.py
+**HIGH** - Line 45: Hardcoded API key detected
+```python
+api_key = "sk_live_abc123xyz789"
+```
+Recommendation: Use environment variables
+
+**HIGH** - Line 67: Possible SQL injection
+```python
+query("SELECT * FROM users WHERE id = " + user_id)
+```
+Recommendation: Use parameterized queries
+```
+
+### 4. ⚡ Performance Regression Detection
+
+Identifies performance anti-patterns and algorithmic issues:
+
+**Detection Patterns:**
+
+**1. Nested Loops (O(n²))**
+```python
+# ⚠️ DETECTED - MEDIUM severity
+for user in users:
+    for item in items:
+        process(user, item)
+
+# Suggestion: Use hash map for O(n) lookup
+```
+
+**2. N² Iteration (Same Collection)**
+```python
+# ⚠️ DETECTED - HIGH severity
+for i in data:
+    for j in data:  # Same collection!
+        compare(i, j)
+
+# Suggestion: Use set operations or single pass algorithm
+```
+
+**3. Large Functions**
+```python
+# ⚠️ DETECTED - LOW severity
+def processEverything():
+    # 150+ lines of code
+    ...
+
+# Suggestion: Break into smaller, focused functions
+```
+
+**Report Output:**
+```markdown
+## 🐌 Performance Issues
+
+### payment.py
+**HIGH** - Line 23: O(n²) pattern - iterating same collection
+*Suggestion: Use hash set/map for O(n) lookup instead*
+
+**MEDIUM** - Line 45: Nested loops detected
+*Suggestion: Consider using hash maps or optimizing the algorithm*
+
+**LOW** - Line 12: Large function (127 lines)
+*Suggestion: Consider breaking into smaller functions*
+```
+
+### 5. 🔍 Breaking Change Detection
 
 Automatically detects when your API changes in breaking ways:
 
@@ -143,7 +324,7 @@ export function validateToken(token: string, options?: ValidateOptions): Promise
   After:  validateToken(token: string, options?: ValidateOptions): Promise<User>
 ```
 
-### 2. 📝 Changelog Generation
+### 6. 📝 Changelog Generation
 
 Maintains a comprehensive CHANGELOG.md with:
 
@@ -170,7 +351,7 @@ Maintains a comprehensive CHANGELOG.md with:
 - `login` signature updated
 ```
 
-### 3. 📚 Intelligent Wiki Routing
+### 7. 📚 Intelligent Wiki Routing
 
 LLM-powered system that intelligently organizes documentation:
 
@@ -196,7 +377,7 @@ test/auth.test.ts → Testing-Guide
 - Smart domain grouping
 - Full audit trail in git
 
-### 4. 🔗 Cross-File Impact Analysis
+### 8. 🔗 Cross-File Impact Analysis
 
 Detects dependencies between files:
 
@@ -209,7 +390,7 @@ You modified `validateToken` in auth.ts which is called by:
 ⚠️ Consider testing these dependent files
 ```
 
-### 5. 💬 Smart PR Comments
+### 9. 💬 Smart PR Comments
 
 Every PR gets a comprehensive analysis:
 
@@ -256,7 +437,7 @@ This PR contains breaking changes that may affect users:
 *Documentation automatically generated. Ask questions about these changes below!*
 ```
 
-### 6. 🤖 PR Bot Features
+### 10. 🤖 PR Bot Features
 
 #### **Q&A Mode**
 
@@ -305,7 +486,7 @@ Summary:
 - `[auto] add tests for validateToken`
 - `[auto] rename formatString to format`
 
-### 7. 🔔 Multi-Platform Notifications
+### 11. 🔔 Multi-Platform Notifications
 
 #### **Discord**
 
@@ -352,7 +533,7 @@ Mobile/desktop notifications with:
 - Quick file summary
 - Clickable workflow link
 
-### 8. 🚨 PR Bump System
+### 12. 🚨 PR Bump System
 
 Get team attention on PRs:
 
@@ -1028,27 +1209,30 @@ MIT License - see [LICENSE](LICENSE) file
 
 ## 🗺️ Roadmap
 
-### Coming Soon
-- [ ] Multi-language support (Go, Rust, Java, C++)
-- [ ] Visual dependency graphs
-- [ ] Auto-generated migration guides
-- [ ] Semantic version automation
-- [ ] Code quality scoring
-- [ ] Security vulnerability scanning
-- [ ] Performance regression detection
-- [ ] Interactive code examples
-- [ ] Teams/MS Teams notifications
-- [ ] Email digest reports
+### ✅ Completed
+- [x] **Multi-language support** - Go, Rust, Java, C/C++
+- [x] **Code quality scoring** - 0-100 score with letter grades
+- [x] **Security vulnerability scanning** - Detects secrets, SQL injection, XSS
+- [x] **Performance regression detection** - O(n²) warnings, optimization suggestions
+- [x] **Discord notifications**
+- [x] **Slack notifications**
+- [x] **Pushbullet notifications**
+- [x] **PR bump system**
+- [x] **Intelligent wiki routing**
+- [x] **Breaking change detection**
+- [x] **Agentic bot**
+- [x] **Q&A bot**
 
-### In Progress
-- [x] Discord notifications
-- [x] Slack notifications
-- [x] Pushbullet notifications
-- [x] PR bump system
-- [x] Intelligent wiki routing
-- [x] Breaking change detection
-- [x] Agentic bot
-- [x] Q&A bot
+### 🚧 Coming Soon
+- [ ] Visual dependency graphs (Mermaid diagrams)
+- [ ] Auto-generated migration guides for breaking changes
+- [ ] Semantic version automation (auto-bump based on changes)
+- [ ] Interactive code examples in documentation
+- [ ] Teams/MS Teams notifications
+- [ ] Email digest reports (daily/weekly summaries)
+- [ ] Custom webhook integrations
+- [ ] Docker image scanning
+- [ ] License compliance checking
 
 ---
 
