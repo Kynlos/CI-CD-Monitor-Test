@@ -1,0 +1,47 @@
+[
+  {
+    "file": ".github/scripts/send-notifications.py",
+    "language": "python",
+    "quality_score": {
+      "total": 45,
+      "documentation": 15,
+      "complexity": 10,
+      "maintainability": 20,
+      "breakdown": {
+        "documentation": {
+          "score": 15,
+          "max": 30,
+          "details": "7.6% documentation coverage (42/556 lines)"
+        },
+        "complexity": {
+          "score": 10,
+          "max": 30,
+          "details": "117 decision points"
+        },
+        "maintainability": {
+          "score": 20,
+          "max": 40,
+          "details": "0 long lines, avg function: 66 lines, max nesting: 84"
+        }
+      },
+      "grade": "D"
+    },
+    "security_vulnerabilities": [],
+    "performance_issues": [
+      {
+        "type": "large_function",
+        "severity": "LOW",
+        "description": "Large function \"send_discord\" (124 lines) may impact performance",
+        "line": 55,
+        "suggestion": "Consider breaking into smaller functions"
+      },
+      {
+        "type": "large_function",
+        "severity": "LOW",
+        "description": "Large function \"send_slack\" (118 lines) may impact performance",
+        "line": 179,
+        "suggestion": "Consider breaking into smaller functions"
+      }
+    ]
+  }
+]
