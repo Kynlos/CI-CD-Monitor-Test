@@ -21,8 +21,7 @@ GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 GITHUB_REPO = os.environ.get('GITHUB_REPOSITORY')  # owner/repo
 GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-MODEL = 'openai/gpt-oss-20b'  # Default (balanced speed and quality)
-# MODEL = 'openai/gpt-oss-120b'  # More powerful but slower and more expensive
+MODEL = 'openai/gpt-oss-120b'  # Use more powerful model for better content decisions
 
 # Persistent mapping file (committed to repo)
 MAPPING_FILE = '.github/wiki-mapping.json'
@@ -241,14 +240,79 @@ Return ONLY the wiki page name, nothing else."""
             return False
     
     def _merge_wiki_content(self, existing: str, new: str, page_name: str) -> str:
-        """Intelligently merge new content into existing wiki page"""
+        """Intelligently merge new content into existing wiki page using LLM"""
         if not existing:
             # New page
             header = f"# {page_name.replace('-', ' ')}\n\n"
             header += f"*Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n"
             return header + new
         
-        # Update existing page
+        # Use LLM to intelligently merge
+        print(f"    🧠 Using LLM to intelligently merge content...")
+        
+        prompt = f"""You are a wiki editor. Intelligently merge new documentation into existing wiki page.
+
+**Existing Wiki Page:**
+```markdown
+{existing[:3000]}
+```
+
+**New Documentation:**
+```markdown
+{new[:2000]}
+```
+
+**Task:**
+1. If documenting NEW functions/classes → ADD as new section
+2. If UPDATING existing functions → REPLACE that section
+3. If similar content exists → MERGE and deduplicate
+4. Update "Last updated" timestamp to: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+5. Maintain wiki structure and formatting
+
+Return the COMPLETE merged wiki page.
+"""
+
+        try:
+            response = requests.post(
+                GROQ_API_URL,
+                headers={
+                    'Authorization': f'Bearer {GROQ_API_KEY}',
+                    'Content-Type': 'application/json'
+                },
+                json={
+                    'model': MODEL,
+                    'messages': [
+                        {'role': 'system', 'content': 'You are a wiki editor. Return clean markdown.'},
+                        {'role': 'user', 'content': prompt}
+                    ],
+                    'temperature': 0.3,
+                    'max_tokens': 4000
+                },
+                timeout=45
+            )
+            
+            if response.status_code == 200:
+                merged = response.json()['choices'][0]['message']['content'].strip()
+                
+                # Clean up if LLM wrapped in code fences
+                if merged.startswith('```markdown'):
+                    merged = merged[11:]
+                if merged.startswith('```'):
+                    merged = merged[3:]
+                if merged.endswith('```'):
+                    merged = merged[:-3]
+                
+                print(f"    ✓ LLM merged content intelligently")
+                return merged.strip()
+            else:
+                print(f"    ⚠️  LLM merge failed, using simple append")
+                return self._simple_merge(existing, new)
+        except Exception as e:
+            print(f"    ⚠️  Error in LLM merge: {e}, using simple append")
+            return self._simple_merge(existing, new)
+    
+    def _simple_merge(self, existing: str, new: str) -> str:
+        """Simple merge fallback"""
         lines = existing.split('\n')
         
         # Update timestamp
@@ -257,9 +321,7 @@ Return ONLY the wiki page name, nothing else."""
                 lines[i] = f"*Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*"
                 break
         
-        # Append new content after header
-        updated = '\n'.join(lines) + '\n\n---\n\n' + new
-        return updated
+        return '\n'.join(lines) + '\n\n---\n\n' + new
     
     def record_mapping(self, file_path: str, page_name: str):
         """Record the file-to-page mapping"""
