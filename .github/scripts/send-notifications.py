@@ -53,6 +53,101 @@ class NotificationService:
             return text
         return text[:limit-3] + "..."
     
+    def _get_commit_emoji(self, breaking_changes: List[Dict]) -> str:
+        """Determine emoji based on commit type"""
+        commit_title = self.commit_message.split('\n')[0].lower()
+        
+        if breaking_changes:
+            return "⚠️"
+        elif any(word in commit_title for word in ['feat', 'feature', 'add']):
+            return "✨"
+        elif any(word in commit_title for word in ['fix', 'bug']):
+            return "🐛"
+        elif any(word in commit_title for word in ['docs', 'documentation']):
+            return "📚"
+        return "📝"
+    
+    def _build_discord_embed_base(self, emoji: str) -> Dict:
+        """Build base Discord embed structure"""
+        commit_title = self.commit_message.split('\n')[0][:100]
+        
+        return {
+            "title": f"{emoji} {commit_title}",
+            "description": f"**{self.repo.split('/')[-1]}** • `{self.commit_sha}`",
+            "color": 0xFF6B35 if emoji == "⚠️" else 0x4CAF50,
+            "timestamp": datetime.utcnow().isoformat(),
+            "footer": {"text": f"by {self.actor}"},
+            "fields": []
+        }
+    
+    def _add_breaking_changes_field(self, embed: Dict, breaking_changes: List[Dict]):
+        """Add breaking changes field to embed"""
+        if not breaking_changes:
+            return
+        
+        breaking_text = "\n".join([
+            f"⚠️ **{bc.get('symbol', 'Unknown')}**: {bc.get('message', '')}"
+            for bc in breaking_changes[:5]
+        ])
+        if len(breaking_changes) > 5:
+            breaking_text += f"\n... and {len(breaking_changes) - 5} more"
+        
+        embed["fields"].append({
+            "name": "🚨 Breaking Changes Detected",
+            "value": self.truncate(breaking_text, DISCORD_EMBED_FIELD_LIMIT),
+            "inline": False
+        })
+    
+    def _add_files_field(self, embed: Dict, changed_files: List[str]):
+        """Add changed files field to embed"""
+        if not changed_files:
+            return
+        
+        files_text = "\n".join([f"• `{Path(f).name}`" for f in changed_files[:10]])
+        if len(changed_files) > 10:
+            files_text += f"\n... and {len(changed_files) - 10} more"
+        
+        embed["fields"].append({
+            "name": f"📄 Files Changed ({len(changed_files)})",
+            "value": self.truncate(files_text, DISCORD_EMBED_FIELD_LIMIT),
+            "inline": True
+        })
+    
+    def _add_wiki_field(self, embed: Dict, wiki_pages: List[str]):
+        """Add wiki pages field to embed"""
+        if not wiki_pages:
+            return
+        
+        wiki_text = "\n".join([f"• [{page}](https://github.com/{self.repo}/wiki/{page})" 
+                               for page in wiki_pages[:8]])
+        if len(wiki_pages) > 8:
+            wiki_text += f"\n... and {len(wiki_pages) - 8} more"
+        
+        embed["fields"].append({
+            "name": f"📚 Wiki Pages Updated ({len(wiki_pages)})",
+            "value": self.truncate(wiki_text, DISCORD_EMBED_FIELD_LIMIT),
+            "inline": True
+        })
+    
+    def _add_analysis_field(self, embed: Dict, analysis_summary: Optional[Dict]):
+        """Add code analysis field to embed"""
+        if not analysis_summary:
+            return
+        
+        analysis_text = f"**Quality:** {analysis_summary['avg_quality_score']}/100\n"
+        
+        if analysis_summary['total_vulnerabilities'] > 0:
+            analysis_text += f"⚠️ **{analysis_summary['total_vulnerabilities']} security issue(s)**\n"
+        
+        if analysis_summary['total_performance_issues'] > 0:
+            analysis_text += f"🐌 **{analysis_summary['total_performance_issues']} performance issue(s)**\n"
+        
+        embed["fields"].append({
+            "name": "📊 Code Analysis",
+            "value": self.truncate(analysis_text, DISCORD_EMBED_FIELD_LIMIT),
+            "inline": False
+        })
+    
     def send_discord(self, 
                      changed_files: List[str], 
                      breaking_changes: List[Dict],
@@ -64,108 +159,32 @@ class NotificationService:
             print("⚠️  No Discord webhook URL configured")
             return False
         
-        # Generate dynamic title based on commit message
-        commit_title = self.commit_message.split('\n')[0][:100]  # First line only
-        
-        # Choose emoji based on content
-        emoji = "📝"
-        if breaking_changes:
-            emoji = "⚠️"
-        elif any(word in commit_title.lower() for word in ['feat', 'feature', 'add']):
-            emoji = "✨"
-        elif any(word in commit_title.lower() for word in ['fix', 'bug']):
-            emoji = "🐛"
-        elif any(word in commit_title.lower() for word in ['docs', 'documentation']):
-            emoji = "📚"
-        
         # Build embed
-        embed = {
-            "title": f"{emoji} {commit_title}",
-            "description": f"**{self.repo.split('/')[-1]}** • `{self.commit_sha}`",
-            "color": 0xFF6B35 if breaking_changes else 0x4CAF50,  # Orange for breaking, green otherwise
-            "timestamp": datetime.utcnow().isoformat(),
-            "footer": {
-                "text": f"by {self.actor}"
-            },
-            "fields": []
-        }
+        emoji = self._get_commit_emoji(breaking_changes)
+        embed = self._build_discord_embed_base(emoji)
         
-        # Breaking changes (high priority)
-        if breaking_changes:
-            breaking_text = "\n".join([
-                f"⚠️ **{bc.get('symbol', 'Unknown')}**: {bc.get('message', '')}"
-                for bc in breaking_changes[:5]
-            ])
-            if len(breaking_changes) > 5:
-                breaking_text += f"\n... and {len(breaking_changes) - 5} more"
-            
-            embed["fields"].append({
-                "name": "🚨 Breaking Changes Detected",
-                "value": self.truncate(breaking_text, DISCORD_EMBED_FIELD_LIMIT),
-                "inline": False
-            })
+        # Add all field sections
+        self._add_breaking_changes_field(embed, breaking_changes)
+        self._add_files_field(embed, changed_files)
+        self._add_wiki_field(embed, wiki_pages)
+        self._add_analysis_field(embed, analysis_summary)
         
-        # Changed files
-        if changed_files:
-            files_text = "\n".join([f"• `{Path(f).name}`" for f in changed_files[:10]])
-            if len(changed_files) > 10:
-                files_text += f"\n... and {len(changed_files) - 10} more"
-            
-            embed["fields"].append({
-                "name": f"📄 Files Changed ({len(changed_files)})",
-                "value": self.truncate(files_text, DISCORD_EMBED_FIELD_LIMIT),
-                "inline": True
-            })
-        
-        # Wiki pages updated
-        if wiki_pages:
-            wiki_text = "\n".join([f"• [{page}](https://github.com/{self.repo}/wiki/{page})" 
-                                   for page in wiki_pages[:8]])
-            if len(wiki_pages) > 8:
-                wiki_text += f"\n... and {len(wiki_pages) - 8} more"
-            
-            embed["fields"].append({
-                "name": f"📚 Wiki Pages Updated ({len(wiki_pages)})",
-                "value": self.truncate(wiki_text, DISCORD_EMBED_FIELD_LIMIT),
-                "inline": True
-            })
-        
-        # Changelog preview
-        if changelog_entries:
-            changelog_text = ""
-            for entry in changelog_entries[:3]:
-                changelog_text += f"**{entry.get('file', 'Unknown')}**\n"
-                content = entry.get('content', '')[:200]
-                changelog_text += f"{content}\n\n"
-            
-            if changelog_text:
-                embed["fields"].append({
-                    "name": "📋 Changelog Preview",
-                    "value": self.truncate(changelog_text, DISCORD_EMBED_FIELD_LIMIT),
-                    "inline": False
-                })
-        
-        # Add action link
+        # Add links
         embed["fields"].append({
             "name": "🔗 Links",
             "value": f"[View Workflow Run]({self.run_url}) • [View Wiki](https://github.com/{self.repo}/wiki)",
             "inline": False
         })
         
-        # Build payload
+        # Build and send payload
         payload = {
             "username": "CI/CD Bot",
             "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
             "embeds": [embed]
         }
         
-        # Send to Discord
         try:
-            response = requests.post(
-                DISCORD_WEBHOOK,
-                json=payload,
-                timeout=10
-            )
+            response = requests.post(DISCORD_WEBHOOK, json=payload, timeout=10)
             
             if response.status_code == 204:
                 print("✓ Discord notification sent successfully")
@@ -189,34 +208,43 @@ class NotificationService:
             print("⚠️  No Slack webhook URL configured")
             return False
         
-        # Generate dynamic title based on commit message
+        emoji = self._get_commit_emoji(breaking_changes)
         commit_title = self.commit_message.split('\n')[0][:100]
         
-        # Choose emoji based on content
-        emoji = "📝"
-        if breaking_changes:
-            emoji = "⚠️"
-        elif any(word in commit_title.lower() for word in ['feat', 'feature', 'add']):
-            emoji = "✨"
-        elif any(word in commit_title.lower() for word in ['fix', 'bug']):
-            emoji = "🐛"
-        elif any(word in commit_title.lower() for word in ['docs', 'documentation']):
-            emoji = "📚"
+        blocks = self._build_slack_blocks(
+            emoji, commit_title, breaking_changes, changed_files, 
+            wiki_pages, analysis_summary
+        )
         
-        # Build Slack blocks
+        payload = {"blocks": blocks}
+        
+        try:
+            response = requests.post(SLACK_WEBHOOK, json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                print("✓ Slack notification sent successfully")
+                return True
+            else:
+                print(f"⚠️  Slack notification failed: {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ Error sending Slack notification: {e}")
+            return False
+    
+    def _build_slack_blocks(self, emoji: str, commit_title: str, 
+                           breaking_changes: List[Dict], changed_files: List[str],
+                           wiki_pages: List[str], analysis_summary: Optional[Dict]) -> List[Dict]:
+        """Build Slack blocks"""
         blocks = [
             {
                 "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": f"{emoji} {commit_title}"
-                }
+                "text": {"type": "plain_text", "text": f"{emoji} {commit_title}"}
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*Commit:* `{self.commit_sha}`\n*By:* {self.actor}\n*Message:* {self.commit_message}"
+                    "text": f"*Commit:* `{self.commit_sha}`\n*By:* {self.actor}\n*Repo:* {self.repo}"
                 }
             }
         ]
@@ -229,73 +257,45 @@ class NotificationService:
             ])
             blocks.append({
                 "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"*🚨 Breaking Changes Detected*\n{breaking_text}"
-                }
+                "text": {"type": "mrkdwn", "text": f"*🚨 Breaking Changes*\n{breaking_text}"}
             })
         
-        # Files and wiki
-        if changed_files or wiki_pages:
+        # Files, wiki, and analysis
+        if changed_files or wiki_pages or analysis_summary:
             fields = []
+            
             if changed_files:
                 files_list = ", ".join([f"`{Path(f).name}`" for f in changed_files[:5]])
                 if len(changed_files) > 5:
                     files_list += f" +{len(changed_files)-5} more"
-                fields.append({
-                    "type": "mrkdwn",
-                    "text": f"*Files:* {files_list}"
-                })
+                fields.append({"type": "mrkdwn", "text": f"*Files:* {files_list}"})
             
             if wiki_pages:
                 wiki_list = ", ".join(wiki_pages[:5])
                 if len(wiki_pages) > 5:
                     wiki_list += f" +{len(wiki_pages)-5} more"
-                fields.append({
-                    "type": "mrkdwn",
-                    "text": f"*Wiki Pages:* {wiki_list}"
-                })
+                fields.append({"type": "mrkdwn", "text": f"*Wiki:* {wiki_list}"})
             
-            blocks.append({
-                "type": "section",
-                "fields": fields
-            })
+            if analysis_summary:
+                analysis_text = f"*Quality:* {analysis_summary['avg_quality_score']}/100"
+                if analysis_summary['total_vulnerabilities'] > 0:
+                    analysis_text += f" | ⚠️ {analysis_summary['total_vulnerabilities']} security"
+                if analysis_summary['total_performance_issues'] > 0:
+                    analysis_text += f" | 🐌 {analysis_summary['total_performance_issues']} performance"
+                fields.append({"type": "mrkdwn", "text": analysis_text})
+            
+            blocks.append({"type": "section", "fields": fields})
         
         # Actions
         blocks.append({
             "type": "actions",
             "elements": [
-                {
-                    "type": "button",
-                    "text": {"type": "plain_text", "text": "View Workflow"},
-                    "url": self.run_url
-                },
-                {
-                    "type": "button",
-                    "text": {"type": "plain_text", "text": "View Wiki"},
-                    "url": f"https://github.com/{self.repo}/wiki"
-                }
+                {"type": "button", "text": {"type": "plain_text", "text": "View Workflow"}, "url": self.run_url},
+                {"type": "button", "text": {"type": "plain_text", "text": "View Wiki"}, "url": f"https://github.com/{self.repo}/wiki"}
             ]
         })
         
-        payload = {"blocks": blocks}
-        
-        try:
-            response = requests.post(
-                SLACK_WEBHOOK,
-                json=payload,
-                timeout=10
-            )
-            
-            if response.status_code == 200:
-                print("✓ Slack notification sent successfully")
-                return True
-            else:
-                print(f"⚠️  Slack notification failed: {response.status_code}")
-                return False
-        except Exception as e:
-            print(f"❌ Error sending Slack notification: {e}")
-            return False
+        return blocks
     
     def send_pushbullet(self,
                         changed_files: List[str],
