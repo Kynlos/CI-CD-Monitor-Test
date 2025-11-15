@@ -1,0 +1,57 @@
+# GitHub Pages Configuration
+
+title: CI/CD Monitor Test Documentation
+description: Automated API documentation and code analysis
+baseurl: "/CI-CD-Monitor-Test"
+url: "https://kynlos.github.io"
+
+# Theme
+theme: jekyll-theme-cayman
+# Alternative themes: minima, jekyll-theme-slate, jekyll-theme-architect
+
+# Plugins
+plugins:
+  - jekyll-relative-links
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Settings
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: true
+
+# Navigation
+header_pages:
+  - api/index.md
+  - guides/index.md
+  - changelog/index.md
+
+# Exclude from processing
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+
+# Defaults
+defaults:
+  - scope:
+      path: "api"
+    values:
+      layout: "api"
+      category: "API Reference"
+  - scope:
+      path: "guides"
+    values:
+      layout: "guide"
+      category: "Guides"
+  - scope:
+      path: "changelog"
+    values:
+      layout: "default"
+      category: "Changelog"
