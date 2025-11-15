@@ -9,6 +9,14 @@ on:
       - '**.tsx'
       - '**.jsx'
       - '**.py'
+      - '**.go'
+      - '**.rs'
+      - '**.java'
+      - '**.cpp'
+      - '**.cc'
+      - '**.c'
+      - '**.h'
+      - '**.hpp'
   pull_request:
     paths:
       - '**.ts'
@@ -16,6 +24,14 @@ on:
       - '**.tsx'
       - '**.jsx'
       - '**.py'
+      - '**.go'
+      - '**.rs'
+      - '**.java'
+      - '**.cpp'
+      - '**.cc'
+      - '**.c'
+      - '**.h'
+      - '**.hpp'
 
 permissions:
   contents: write
@@ -56,6 +72,11 @@ jobs:
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: python .github/scripts/generate-docs.py
+      
+      - name: Run advanced code analysis
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python .github/scripts/code-analyzer.py
       
       - name: Check for breaking changes
         if: github.event_name == 'pull_request'

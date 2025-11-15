@@ -259,7 +259,7 @@ def main():
     with open('changed_files.txt', 'r') as f:
         changed_files = [line.strip() for line in f if line.strip()]
     
-    code_extensions = {'.ts', '.js', '.tsx', '.jsx', '.py'}
+    code_extensions = {'.ts', '.js', '.tsx', '.jsx', '.py', '.go', '.rs', '.java', '.cpp', '.cc', '.c', '.h', '.hpp'}
     code_files = [f for f in changed_files if Path(f).suffix in code_extensions]
     
     if not code_files:
