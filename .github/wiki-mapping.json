@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-15T18:47:28.172431",
+  "last_updated": "2025-11-15T18:49:11.217445",
   "description": "Persistent mapping of source files to Wiki pages. DO NOT DELETE - used by wiki-manager.py to ensure consistency.",
   "file_to_page": {
     "email-service.ts": "Email-Service",
@@ -16,21 +16,21 @@
       "files": [
         "email-service.ts"
       ],
-      "last_updated": "2025-11-15T18:47:27.793258"
+      "last_updated": "2025-11-15T18:49:11.216611"
     },
     "Agentic-Bot": {
       "created": "2025-11-14T23:44:51.106934",
       "files": [
         "agentic-bot.ts"
       ],
-      "last_updated": "2025-11-15T18:47:27.793428"
+      "last_updated": "2025-11-15T18:49:11.216788"
     },
     "Documentation-Generation": {
       "created": "2025-11-14T23:44:51.255242",
       "files": [
         "generate-docs.ts"
       ],
-      "last_updated": "2025-11-15T18:47:27.793608"
+      "last_updated": "2025-11-15T18:49:11.216970"
     },
     "Notification-Service": {
       "created": "2025-11-15T18:45:30.577850",
@@ -38,14 +38,14 @@
         "send-notifications.ts",
         "pr-bump-notify.ts"
       ],
-      "last_updated": "2025-11-15T18:47:27.979474"
+      "last_updated": "2025-11-15T18:49:11.217249"
     },
     "Pull-Request-Bump-Guide": {
       "created": "2025-11-15T18:47:28.172421",
       "files": [
         "PR-BUMP-GUIDE.ts"
       ],
-      "last_updated": "2025-11-15T18:47:28.172428"
+      "last_updated": "2025-11-15T18:49:11.217438"
     }
   }
 }
