@@ -131,6 +131,7 @@ jobs:
               git commit -m "docs: Auto-update wiki from code changes [skip ci]"
               git push
               echo "✓ Wiki updated successfully"
+              echo "✓ View at: https://github.com/${{ github.repository }}/wiki"
             else
               echo "ℹ️  No wiki changes to commit"
             fi
