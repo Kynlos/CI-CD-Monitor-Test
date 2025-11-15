@@ -44,8 +44,8 @@ class PagesManager:
             'site_structure': {
                 'index.md': {'title': 'Home', 'category': 'root'},
                 'api/': {'title': 'API Reference', 'category': 'api'},
-                'guides/': {'title': 'Guides', 'category': 'guides'},
-                'changelog/': {'title': 'Changelog', 'category': 'changelog'}
+                'modules/': {'title': 'Modules', 'category': 'modules'},
+                'features/': {'title': 'Features', 'category': 'features'}
             }
         }
     

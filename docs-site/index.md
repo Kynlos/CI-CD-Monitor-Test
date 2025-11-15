@@ -7,11 +7,22 @@ layout: default
 
 This is the auto-generated documentation website for the CI/CD Monitor Test project.
 
-## Quick Links
+## Documentation Sections
 
-- [API Reference](api/) - Complete API documentation for all modules
-- [Guides](guides/) - Step-by-step tutorials and how-to guides
-- [Changelog](changelog/) - Version history and notable changes
+### [📖 API Reference](api/)
+Low-level API documentation - functions, classes, interfaces, parameters, return types, and code examples.
+
+### [📦 Modules](modules/)
+Module architecture and design - how different parts of the system work together, design decisions, and module interactions.
+
+### [✨ Features](features/)
+User-facing feature documentation - how to use features, tutorials, guides, and best practices.
+
+### [📚 Wiki](https://github.com/Kynlos/CI-CD-Monitor-Test/wiki)
+Additional documentation including setup guides, troubleshooting, and community contributions.
+
+### [📝 Changelog](https://github.com/Kynlos/CI-CD-Monitor-Test/blob/main/CHANGELOG.md)
+Version history, notable changes, and breaking change alerts.
 
 ## Features
 
