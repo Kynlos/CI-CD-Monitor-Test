@@ -14,6 +14,7 @@ from typing import List, Dict, Optional
 
 DISCORD_WEBHOOK = os.environ.get('DISCORD_WEBHOOK_URL')
 SLACK_WEBHOOK = os.environ.get('SLACK_WEBHOOK_URL')
+PUSHBULLET_TOKEN = os.environ.get('PUSHBULLET')
 
 # Discord limits
 DISCORD_CONTENT_LIMIT = 2000
@@ -292,6 +293,85 @@ class NotificationService:
         except Exception as e:
             print(f"❌ Error sending Slack notification: {e}")
             return False
+    
+    def send_pushbullet(self,
+                        changed_files: List[str],
+                        breaking_changes: List[Dict],
+                        changelog_entries: List[Dict],
+                        wiki_pages: List[str]) -> bool:
+        """Send push notification via Pushbullet"""
+        if not PUSHBULLET_TOKEN:
+            print("⚠️  No Pushbullet token configured")
+            return False
+        
+        # Generate dynamic title
+        commit_title = self.commit_message.split('\n')[0][:100]
+        
+        # Choose emoji
+        emoji = "📝"
+        if breaking_changes:
+            emoji = "⚠️"
+        elif any(word in commit_title.lower() for word in ['feat', 'feature', 'add']):
+            emoji = "✨"
+        elif any(word in commit_title.lower() for word in ['fix', 'bug']):
+            emoji = "🐛"
+        elif any(word in commit_title.lower() for word in ['docs', 'documentation']):
+            emoji = "📚"
+        
+        # Build notification body
+        body_parts = [
+            f"Repo: {self.repo}",
+            f"By: {self.actor}",
+            f"Commit: {self.commit_sha}",
+        ]
+        
+        if breaking_changes:
+            body_parts.append(f"\n⚠️ {len(breaking_changes)} BREAKING CHANGE(S)")
+        
+        if changed_files:
+            file_list = ', '.join([Path(f).name for f in changed_files[:5]])
+            if len(changed_files) > 5:
+                file_list += f' +{len(changed_files)-5} more'
+            body_parts.append(f"\nFiles: {file_list}")
+        
+        if wiki_pages:
+            body_parts.append(f"Wiki: {len(wiki_pages)} page(s) updated")
+        
+        body = '\n'.join(body_parts)
+        
+        # Pushbullet API
+        url = "https://api.pushbullet.com/v2/pushes"
+        headers = {
+            "Access-Token": PUSHBULLET_TOKEN,
+            "Content-Type": "application/json"
+        }
+        
+        # Create link push for better interaction
+        payload = {
+            "type": "link",
+            "title": f"{emoji} {commit_title}",
+            "body": body,
+            "url": self.run_url
+        }
+        
+        try:
+            response = requests.post(
+                url,
+                headers=headers,
+                json=payload,
+                timeout=10
+            )
+            
+            if response.status_code in [200, 201]:
+                print("✓ Pushbullet notification sent successfully")
+                return True
+            else:
+                print(f"⚠️  Pushbullet notification failed: {response.status_code}")
+                print(f"Response: {response.text}")
+                return False
+        except Exception as e:
+            print(f"❌ Error sending Pushbullet notification: {e}")
+            return False
 
 
 def load_workflow_data():
@@ -406,6 +486,16 @@ def main():
             data['wiki_pages']
         )
         results.append(('Slack', success))
+    
+    if PUSHBULLET_TOKEN:
+        print("\n📢 Sending Pushbullet notification...")
+        success = service.send_pushbullet(
+            data['changed_files'],
+            data['breaking_changes'],
+            data['changelog_entries'],
+            data['wiki_pages']
+        )
+        results.append(('Pushbullet', success))
     
     # Summary
     print("\n" + "="*80)

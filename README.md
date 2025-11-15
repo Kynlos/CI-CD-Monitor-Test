@@ -51,7 +51,8 @@ GitHub Actions workflow with intelligent code analysis and documentation generat
 - **Character limit handling** - Respects platform limits (Discord 2000/4096/6000)
 - **PR bump support** - Comment "bump", "review needed", etc. to alert team
 - **Urgency detection** - Auto-pings @here for urgent/blocked PRs
-- **Easy expansion** - Same code works for Discord and Slack
+- **Pushbullet support** - Push notifications to mobile/desktop devices
+- **Easy expansion** - Same code works for Discord, Slack, and Pushbullet
 
 ## Setup for https://github.com/Kynlos/CI-CD-Monitor-Test
 
@@ -65,6 +66,7 @@ GitHub Actions workflow with intelligent code analysis and documentation generat
    - **Optional (for notifications):**
      - `DISCORD_WEBHOOK_URL` - Discord webhook URL for notifications
      - `SLACK_WEBHOOK_URL` - Slack webhook URL for notifications
+     - `PUSHBULLET` - Pushbullet API token for mobile/desktop push notifications
 
 ### 2. Copy Workflow Files
 
