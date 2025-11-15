@@ -1,7 +1,3 @@
----
-layout: default
----
-
 # 📚 Welcome to the Documentation
 
 This is the auto-generated documentation website for the CI/CD Monitor Test project.
