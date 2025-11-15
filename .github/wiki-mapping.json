@@ -1,12 +1,14 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-15T18:45:30.578432",
+  "last_updated": "2025-11-15T18:47:28.172431",
   "description": "Persistent mapping of source files to Wiki pages. DO NOT DELETE - used by wiki-manager.py to ensure consistency.",
   "file_to_page": {
     "email-service.ts": "Email-Service",
     "agentic-bot.ts": "Agentic-Bot",
     "generate-docs.ts": "Documentation-Generation",
-    "send-notifications.ts": "Notification-Service"
+    "send-notifications.ts": "Notification-Service",
+    "pr-bump-notify.ts": "Notification-Service",
+    "PR-BUMP-GUIDE.ts": "Pull-Request-Bump-Guide"
   },
   "page_metadata": {
     "Email-Service": {
@@ -14,28 +16,36 @@
       "files": [
         "email-service.ts"
       ],
-      "last_updated": "2025-11-15T18:45:30.578078"
+      "last_updated": "2025-11-15T18:47:27.793258"
     },
     "Agentic-Bot": {
       "created": "2025-11-14T23:44:51.106934",
       "files": [
         "agentic-bot.ts"
       ],
-      "last_updated": "2025-11-15T18:45:30.578248"
+      "last_updated": "2025-11-15T18:47:27.793428"
     },
     "Documentation-Generation": {
       "created": "2025-11-14T23:44:51.255242",
       "files": [
         "generate-docs.ts"
       ],
-      "last_updated": "2025-11-15T18:45:30.578428"
+      "last_updated": "2025-11-15T18:47:27.793608"
     },
     "Notification-Service": {
       "created": "2025-11-15T18:45:30.577850",
       "files": [
-        "send-notifications.ts"
+        "send-notifications.ts",
+        "pr-bump-notify.ts"
       ],
-      "last_updated": "2025-11-15T18:45:30.577857"
+      "last_updated": "2025-11-15T18:47:27.979474"
+    },
+    "Pull-Request-Bump-Guide": {
+      "created": "2025-11-15T18:47:28.172421",
+      "files": [
+        "PR-BUMP-GUIDE.ts"
+      ],
+      "last_updated": "2025-11-15T18:47:28.172428"
     }
   }
 }
