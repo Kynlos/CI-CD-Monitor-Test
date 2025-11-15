@@ -20,7 +20,8 @@ import requests
 
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-MODEL = 'llama-3.3-70b-versatile'
+MODEL = 'openai/gpt-oss-20b'  # Default (balanced speed and quality)
+# MODEL = 'openai/gpt-oss-120b'  # More powerful but slower and more expensive
 
 def extract_symbols_detailed(content):
     """Extract symbols with detailed information"""

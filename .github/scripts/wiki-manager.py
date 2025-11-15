@@ -21,7 +21,8 @@ GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN')
 GITHUB_REPO = os.environ.get('GITHUB_REPOSITORY')  # owner/repo
 GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-MODEL = 'llama-3.3-70b-versatile'
+MODEL = 'openai/gpt-oss-20b'  # Default (balanced speed and quality)
+# MODEL = 'openai/gpt-oss-120b'  # More powerful but slower and more expensive
 
 # Persistent mapping file (committed to repo)
 MAPPING_FILE = '.github/wiki-mapping.json'
