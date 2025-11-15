@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-15T19:05:44.195630",
+  "last_updated": "2025-11-15T21:15:34.220039",
   "description": "Persistent mapping of source files to Wiki pages. DO NOT DELETE - used by wiki-manager.py to ensure consistency.",
   "file_to_page": {
     "email-service.ts": "Email-Service",
@@ -9,7 +9,8 @@
     "send-notifications.ts": "Notification-Service",
     "pr-bump-notify.ts": "Notification-Service",
     "PR-BUMP-GUIDE.ts": "Pull-Request-Bump-Guide",
-    "wiki-manager.ts": "Wiki-Manager"
+    "wiki-manager.ts": "Wiki-Manager",
+    "code-analyzer.ts": "Code-Analyzer"
   },
   "page_metadata": {
     "Email-Service": {
@@ -31,7 +32,7 @@
       "files": [
         "generate-docs.ts"
       ],
-      "last_updated": "2025-11-15T19:05:44.195399"
+      "last_updated": "2025-11-15T21:15:34.220035"
     },
     "Notification-Service": {
       "created": "2025-11-15T18:45:30.577850",
@@ -54,6 +55,13 @@
         "wiki-manager.ts"
       ],
       "last_updated": "2025-11-15T19:05:44.195626"
+    },
+    "Code-Analyzer": {
+      "created": "2025-11-15T21:15:34.219798",
+      "files": [
+        "code-analyzer.ts"
+      ],
+      "last_updated": "2025-11-15T21:15:34.219804"
     }
   }
 }
