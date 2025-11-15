@@ -61,14 +61,28 @@ class NotificationService:
             print("⚠️  No Discord webhook URL configured")
             return False
         
+        # Generate dynamic title based on commit message
+        commit_title = self.commit_message.split('\n')[0][:100]  # First line only
+        
+        # Choose emoji based on content
+        emoji = "📝"
+        if breaking_changes:
+            emoji = "⚠️"
+        elif any(word in commit_title.lower() for word in ['feat', 'feature', 'add']):
+            emoji = "✨"
+        elif any(word in commit_title.lower() for word in ['fix', 'bug']):
+            emoji = "🐛"
+        elif any(word in commit_title.lower() for word in ['docs', 'documentation']):
+            emoji = "📚"
+        
         # Build embed
         embed = {
-            "title": f"📝 Documentation Updated - {self.repo}",
-            "description": self.truncate(self.commit_message, 300),
+            "title": f"{emoji} {commit_title}",
+            "description": f"**{self.repo.split('/')[-1]}** • `{self.commit_sha}`",
             "color": 0xFF6B35 if breaking_changes else 0x4CAF50,  # Orange for breaking, green otherwise
             "timestamp": datetime.utcnow().isoformat(),
             "footer": {
-                "text": f"Commit {self.commit_sha} by {self.actor}"
+                "text": f"by {self.actor}"
             },
             "fields": []
         }
@@ -171,13 +185,27 @@ class NotificationService:
             print("⚠️  No Slack webhook URL configured")
             return False
         
+        # Generate dynamic title based on commit message
+        commit_title = self.commit_message.split('\n')[0][:100]
+        
+        # Choose emoji based on content
+        emoji = "📝"
+        if breaking_changes:
+            emoji = "⚠️"
+        elif any(word in commit_title.lower() for word in ['feat', 'feature', 'add']):
+            emoji = "✨"
+        elif any(word in commit_title.lower() for word in ['fix', 'bug']):
+            emoji = "🐛"
+        elif any(word in commit_title.lower() for word in ['docs', 'documentation']):
+            emoji = "📚"
+        
         # Build Slack blocks
         blocks = [
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"📝 Documentation Updated - {self.repo}"
+                    "text": f"{emoji} {commit_title}"
                 }
             },
             {
