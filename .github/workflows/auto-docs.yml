@@ -147,6 +147,17 @@ jobs:
           echo "2. Create the first wiki page manually"
           echo "3. Future commits will auto-update the wiki"
       
+      - name: Send notifications
+        if: github.event_name == 'push'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: python .github/scripts/send-notifications.py
+      
       - name: Commit updated docs, changelog, and wiki mapping
         if: github.event_name == 'push'
         run: |

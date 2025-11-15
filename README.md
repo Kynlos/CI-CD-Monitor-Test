@@ -46,13 +46,16 @@ GitHub Actions workflow with intelligent code analysis and documentation generat
 
 ## Setup for https://github.com/Kynlos/CI-CD-Monitor-Test
 
-### 1. Add GitHub Secret
+### 1. Add GitHub Secrets
 
 1. Go to https://github.com/Kynlos/CI-CD-Monitor-Test/settings/secrets/actions
 2. Click "New repository secret"
-3. Name: `GROQ_API_KEY`
-4. Value: `<your-groq-api-key>`
-5. Click "Add secret"
+3. Add the following secrets:
+   - **Required:**
+     - `GROQ_API_KEY` - Your Groq API key
+   - **Optional (for notifications):**
+     - `DISCORD_WEBHOOK_URL` - Discord webhook URL for notifications
+     - `SLACK_WEBHOOK_URL` - Slack webhook URL for notifications
 
 ### 2. Copy Workflow Files
 
