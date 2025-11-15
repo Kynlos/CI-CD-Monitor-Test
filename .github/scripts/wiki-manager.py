@@ -424,19 +424,36 @@ def process_documentation_to_wiki(doc_files: List[str]):
 
 
 if __name__ == '__main__':
-    # Get list of doc files from docs/ directory
-    docs_dir = Path('docs')
+    # Get list of CHANGED source files to determine which docs to process
+    changed_source_files = []
+    if os.path.exists('changed_files.txt'):
+        with open('changed_files.txt', 'r') as f:
+            changed_source_files = [line.strip() for line in f if line.strip()]
     
+    if not changed_source_files:
+        print("No changed source files detected")
+        sys.exit(0)
+    
+    # Map source files to their doc files
+    docs_dir = Path('docs')
     if not docs_dir.exists():
         print("No docs directory found")
         sys.exit(0)
     
-    doc_files = list(docs_dir.glob('*.md'))
+    # Only process docs for files that actually changed
+    doc_files_to_process = []
+    for source_file in changed_source_files:
+        source_path = Path(source_file)
+        doc_filename = source_path.stem + '.md'
+        doc_path = docs_dir / doc_filename
+        
+        if doc_path.exists():
+            doc_files_to_process.append(str(doc_path))
     
-    if not doc_files:
-        print("No documentation files found")
+    if not doc_files_to_process:
+        print("No documentation files found for changed source files")
         sys.exit(0)
     
-    print(f"Found {len(doc_files)} documentation files")
+    print(f"Found {len(doc_files_to_process)} documentation files for changed sources")
     
-    process_documentation_to_wiki([str(f) for f in doc_files])
+    process_documentation_to_wiki(doc_files_to_process)
