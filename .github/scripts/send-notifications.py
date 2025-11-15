@@ -298,7 +298,8 @@ class NotificationService:
                         changed_files: List[str],
                         breaking_changes: List[Dict],
                         changelog_entries: List[Dict],
-                        wiki_pages: List[str]) -> bool:
+                        wiki_pages: List[str],
+                        analysis_summary: Optional[Dict] = None) -> bool:
         """Send push notification via Pushbullet"""
         if not PUSHBULLET_TOKEN:
             print("⚠️  No Pushbullet token configured")
@@ -338,13 +339,12 @@ class NotificationService:
             body_parts.append(f"Wiki: {len(wiki_pages)} page(s) updated")
         
         # Add analysis summary
-        analysis = data.get('analysis_summary')
-        if analysis:
-            body_parts.append(f"\nQuality: {analysis['avg_quality_score']}/100")
-            if analysis['total_vulnerabilities'] > 0:
-                body_parts.append(f"⚠️ {analysis['total_vulnerabilities']} security issues")
-            if analysis['total_performance_issues'] > 0:
-                body_parts.append(f"🐌 {analysis['total_performance_issues']} performance issues")
+        if analysis_summary:
+            body_parts.append(f"\nQuality: {analysis_summary['avg_quality_score']}/100")
+            if analysis_summary['total_vulnerabilities'] > 0:
+                body_parts.append(f"⚠️ {analysis_summary['total_vulnerabilities']} security issues")
+            if analysis_summary['total_performance_issues'] > 0:
+                body_parts.append(f"🐌 {analysis_summary['total_performance_issues']} performance issues")
         
         body = '\n'.join(body_parts)
         
@@ -534,7 +534,8 @@ def main():
             data['changed_files'],
             data['breaking_changes'],
             data['changelog_entries'],
-            data['wiki_pages']
+            data['wiki_pages'],
+            data.get('analysis_summary')
         )
         results.append(('Pushbullet', success))
     
