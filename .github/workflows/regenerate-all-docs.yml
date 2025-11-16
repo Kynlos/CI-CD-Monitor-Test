@@ -13,6 +13,10 @@ permissions:
   contents: write
   pages: write
 
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   regenerate:
     runs-on: ubuntu-latest
@@ -138,10 +142,24 @@ jobs:
                   || true
           
           if ! git diff --staged --quiet; then
-            git pull --rebase origin main || true
+            BRANCH="${GITHUB_REF_NAME:-main}"
+            
+            # Commit first so the index is clean
             git commit -m "docs: Regenerate all documentation [skip ci]"
-            git push
-            echo "✅ Documentation committed"
+            
+            # Rebase onto latest remote and push with retries to handle concurrent pushes
+            git fetch origin "$BRANCH"
+            
+            for i in 1 2 3; do
+              if git pull --rebase --autostash origin "$BRANCH"; then
+                if git push origin "HEAD:$BRANCH"; then
+                  echo "✅ Documentation committed"
+                  break
+                fi
+              fi
+              echo "⚠️ Push failed (attempt $i). Rebasing and retrying..."
+              sleep $((i*2))
+            done
           else
             echo "ℹ️  No changes to commit"
           fi

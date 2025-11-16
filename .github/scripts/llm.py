@@ -127,42 +127,71 @@ class LLMClient:
         
         return None
     
+    def _strip_code_fences(self, text: str) -> str:
+        """Remove code fences from text"""
+        return re.sub(r'```(?:json)?|```', '', text).strip()
+    
+    def _extract_balanced_json(self, text: str) -> Optional[str]:
+        """Extract a balanced JSON object or array"""
+        start = None
+        for i, ch in enumerate(text):
+            if ch in '{[':
+                start = i
+                break
+        if start is None:
+            return None
+        
+        stack = []
+        for j in range(start, len(text)):
+            if text[j] in '{[':
+                stack.append(text[j])
+            elif text[j] in '}]':
+                if not stack:
+                    return None
+                open_ch = stack.pop()
+                if (open_ch == '{' and text[j] != '}') or (open_ch == '[' and text[j] != ']'):
+                    return None
+                if not stack:
+                    return text[start:j+1]
+        return None
+    
+    def _sanitize_json_like(self, s: str) -> str:
+        """Normalize smart quotes and remove trailing commas"""
+        # Normalize smart quotes
+        s = s.replace('\u201c', '"').replace('\u201d', '"').replace('\u2019', "'")
+        s = s.replace('\u200b', '')  # zero-width space
+        # Remove trailing commas before } or ]
+        s = re.sub(r',\s*([}\]])', r'\1', s)
+        return s
+    
     def _coerce_to_json(self, text: str) -> str:
         """Extract and validate JSON from LLM response"""
-        # Strip code fences
-        text = text.strip()
-        if text.startswith('```json'):
-            text = text[7:]
-        elif text.startswith('```'):
-            text = text[3:]
+        text = self._strip_code_fences(text)
         
-        if text.endswith('```'):
-            text = text[:-3]
-        
-        text = text.strip()
-        
-        # Try to parse as JSON
+        # Try to parse as-is
         try:
             json.loads(text)
             return text
-        except json.JSONDecodeError as e:
-            # Try to extract JSON block with better pattern
-            match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', text, re.DOTALL)
-            if match:
-                try:
-                    json.loads(match.group(0))
-                    return match.group(0)
-                except:
-                    pass
-            
-            # Try to fix common issues
-            fixed_text = self._fix_json_errors(text)
-            try:
-                json.loads(fixed_text)
-                return fixed_text
-            except:
-                print("  ⚠️  Could not coerce to valid JSON")
-                return text
+        except json.JSONDecodeError:
+            pass
+        
+        # Try balanced block extraction
+        snippet = self._extract_balanced_json(text) or text
+        
+        try:
+            json.loads(snippet)
+            return snippet
+        except json.JSONDecodeError:
+            pass
+        
+        # Sanitize and try again
+        sanitized = self._sanitize_json_like(snippet)
+        try:
+            json.loads(sanitized)
+            return sanitized
+        except json.JSONDecodeError:
+            print("  ⚠️  Could not coerce to valid JSON")
+            return snippet
     
     def _fix_json_errors(self, text: str) -> str:
         """Attempt to fix common JSON errors"""
