@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-15T23:54:52.097340",
+  "last_updated": "2025-11-16T00:03:13.025463",
   "file_to_page": {
     "pages-manager.ts": "api/pages-manager.md",
     "wiki-manager.ts": "guides/wiki-manager.md",
@@ -80,7 +80,7 @@
       "sources": [
         "llm.ts"
       ],
-      "last_updated": "2025-11-15T23:33:28.429843",
+      "last_updated": "2025-11-16T00:03:13.024731",
       "last_action": "create"
     }
   },
