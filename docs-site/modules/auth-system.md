@@ -1,4 +1,3 @@
-```markdown
 ---
 title: Auth System
 layout: default
@@ -252,8 +251,6 @@ async function checkToken(token: string) {
 
 // Example execution
 performLogin();
-```
-
 ---
 
 *This documentation is automatically generated from the source file `auth.ts`. Keep it in sync with any changes to the module.*
