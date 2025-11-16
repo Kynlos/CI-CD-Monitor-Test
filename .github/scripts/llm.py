@@ -156,10 +156,38 @@ class LLMClient:
         return None
     
     def _sanitize_json_like(self, s: str) -> str:
-        """Normalize smart quotes and remove trailing commas"""
+        """Normalize smart quotes, fix multiline strings, and remove trailing commas"""
         # Normalize smart quotes
         s = s.replace('\u201c', '"').replace('\u201d', '"').replace('\u2019', "'")
         s = s.replace('\u200b', '')  # zero-width space
+        
+        # Fix unterminated strings by escaping newlines inside quoted strings
+        # This handles the common LLM error of putting literal newlines in JSON strings
+        lines = s.split('\n')
+        fixed_lines = []
+        in_string = False
+        
+        for i, line in enumerate(lines):
+            # Count unescaped quotes in this line
+            quote_count = 0
+            j = 0
+            while j < len(line):
+                if line[j] == '"' and (j == 0 or line[j-1] != '\\'):
+                    quote_count += 1
+                j += 1
+            
+            # If odd number of quotes, we're starting or ending a string
+            if quote_count % 2 == 1:
+                in_string = not in_string
+            
+            # If we're in a string and this isn't the last line, escape the newline
+            if in_string and i < len(lines) - 1:
+                fixed_lines.append(line.rstrip() + '\\n')
+            else:
+                fixed_lines.append(line)
+        
+        s = ''.join(fixed_lines)
+        
         # Remove trailing commas before } or ]
         s = re.sub(r',\s*([}\]])', r'\1', s)
         return s
