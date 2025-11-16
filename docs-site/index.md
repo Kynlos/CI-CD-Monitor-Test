@@ -10,8 +10,8 @@ This is the auto-generated documentation website for the CI/CD Monitor Test proj
 ## Quick Links
 
 - [API Reference](api/) - Complete API documentation for all modules
-- [Guides](guides/) - Step-by-step tutorials and how-to guides
-- [Changelog](changelog/) - Version history and notable changes
+- [Modules](modules/) - Architecture and design documentation
+- [Features](features/) - User-facing feature guides and tutorials
 
 ## Features
 
