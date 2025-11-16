@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-16T00:17:52.438569",
+  "last_updated": "2025-11-16T00:19:38.941406",
   "file_to_page": {
     "pages-manager.ts": [
       "api/pages-manager.md",
@@ -108,7 +108,7 @@
       "sources": [
         "llm.ts"
       ],
-      "last_updated": "2025-11-16T00:17:20.016543",
+      "last_updated": "2025-11-16T00:19:38.940404",
       "last_action": "create"
     },
     "features/payment-system.md": {
