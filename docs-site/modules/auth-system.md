@@ -1,5 +1,5 @@
 ---
-title: Authentication
+title: Auth System
 layout: default
 ---
 

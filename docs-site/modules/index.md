@@ -10,9 +10,12 @@ Module architecture and design documentation.
 
 ## Available Modules
 
+- **[Auth System](auth-system.md)** - Module architecture and design
+- **[Data Layer](data-layer.md)** - Module architecture and design
+- **[Email Service](email-service.md)** - Module architecture and design
 - **[Llm](llm.md)** - Module architecture and design
 
-**Total:** 1 modules
+**Total:** 4 modules
 
 ---
 

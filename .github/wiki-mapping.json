@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-16T00:12:58.271680",
+  "last_updated": "2025-11-16T00:13:22.202216",
   "description": "Persistent mapping of source files to Wiki pages. DO NOT DELETE - used by wiki-manager.py to ensure consistency.",
   "file_to_page": {
     "email-service.ts": "Email-Service",
@@ -23,7 +23,7 @@
       "files": [
         "email-service.ts"
       ],
-      "last_updated": "2025-11-16T00:11:05.956958"
+      "last_updated": "2025-11-16T00:13:22.202036"
     },
     "Agentic-Bot": {
       "created": "2025-11-14T23:44:51.106934",
@@ -80,21 +80,21 @@
       "files": [
         "auth.ts"
       ],
-      "last_updated": "2025-11-16T00:11:05.956656"
+      "last_updated": "2025-11-16T00:13:22.201662"
     },
     "Payment-Processor": {
       "created": "2025-11-15T23:21:06.894591",
       "files": [
         "payment-processor.ts"
       ],
-      "last_updated": "2025-11-16T00:11:05.956813"
+      "last_updated": "2025-11-16T00:13:22.201860"
     },
     "Database-Layer": {
       "created": "2025-11-15T23:21:07.181110",
       "files": [
         "database.ts"
       ],
-      "last_updated": "2025-11-16T00:11:05.957080"
+      "last_updated": "2025-11-16T00:13:22.202212"
     },
     "Llm": {
       "created": "2025-11-15T23:33:27.679925",
