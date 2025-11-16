@@ -1,8 +1,11 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-16T00:03:13.025463",
+  "last_updated": "2025-11-16T00:05:42.360107",
   "file_to_page": {
-    "pages-manager.ts": "api/pages-manager.md",
+    "pages-manager.ts": [
+      "api/pages-manager.md",
+      "api/pages-manager.md"
+    ],
     "wiki-manager.ts": "guides/wiki-manager.md",
     "auth.ts": "api/authentication.md",
     "payment-processor.ts": "api/payments.md",
@@ -16,7 +19,7 @@
       "sources": [
         "pages-manager.ts"
       ],
-      "last_updated": "2025-11-15T23:54:19.920399",
+      "last_updated": "2025-11-16T00:05:42.359302",
       "last_action": "create"
     },
     "guides/wiki-manager.md": {
