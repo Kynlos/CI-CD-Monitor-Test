@@ -143,12 +143,11 @@ class LLMClient:
         
         # Try to parse as JSON
         try:
-            # Validate it's valid JSON
             json.loads(text)
             return text
-        except json.JSONDecodeError:
-            # Try to extract JSON block
-            match = re.search(r'\{.*\}', text, re.DOTALL)
+        except json.JSONDecodeError as e:
+            # Try to extract JSON block with better pattern
+            match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', text, re.DOTALL)
             if match:
                 try:
                     json.loads(match.group(0))
@@ -156,8 +155,39 @@ class LLMClient:
                 except:
                     pass
             
-            print("  ⚠️  Could not coerce to valid JSON")
+            # Try to fix common issues
+            fixed_text = self._fix_json_errors(text)
+            try:
+                json.loads(fixed_text)
+                return fixed_text
+            except:
+                print("  ⚠️  Could not coerce to valid JSON")
+                return text
+    
+    def _fix_json_errors(self, text: str) -> str:
+        """Attempt to fix common JSON errors"""
+        # Find the first { and last }
+        first_brace = text.find('{')
+        last_brace = text.rfind('}')
+        
+        if first_brace == -1 or last_brace == -1:
             return text
+        
+        json_text = text[first_brace:last_brace + 1]
+        
+        # Fix unterminated strings by finding quotes
+        lines = json_text.split('\n')
+        fixed_lines = []
+        
+        for line in lines:
+            # Count quotes
+            quote_count = line.count('"')
+            # If odd number of quotes and line doesn't end with comma or brace, add closing quote
+            if quote_count % 2 == 1 and not line.rstrip().endswith((',', '{', '}')):
+                line = line.rstrip() + '"'
+            fixed_lines.append(line)
+        
+        return '\n'.join(fixed_lines)
     
     def clear_cache(self, pattern: str = None):
         """Clear LLM cache (optionally by pattern)"""
