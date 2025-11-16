@@ -10,13 +10,15 @@ User-facing feature documentation and guides.
 
 ## Available Features
 
+- **[Auth System](auth-system.md)** - Feature guide and tutorial
 - **[Authentication](authentication.md)** - Feature guide and tutorial
 - **[Data Layer](data-layer.md)** - Feature guide and tutorial
 - **[Email Service](email-service.md)** - Feature guide and tutorial
 - **[Llm](llm.md)** - Feature guide and tutorial
+- **[Notification System](notification-system.md)** - Feature guide and tutorial
 - **[Payment System](payment-system.md)** - Feature guide and tutorial
 
-**Total:** 5 features
+**Total:** 7 features
 
 ---
 

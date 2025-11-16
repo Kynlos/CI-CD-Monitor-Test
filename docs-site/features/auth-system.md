@@ -1,3 +1,8 @@
+---
+title: Auth System
+layout: default
+---
+
 # auth.ts
 
 *Auto-generated from `./auth.ts`*

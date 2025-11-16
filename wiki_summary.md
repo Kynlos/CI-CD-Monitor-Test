@@ -10,7 +10,7 @@
 
 ### Authentication-API
 - **Files:** 1
-- **Last Updated:** 2025-11-16T00:17:41.503283
+- **Last Updated:** 2025-11-16T00:19:55.479055
 - **Contains:**
   - `auth.ts`
 
@@ -22,7 +22,7 @@
 
 ### Database-Layer
 - **Files:** 1
-- **Last Updated:** 2025-11-16T00:17:41.503891
+- **Last Updated:** 2025-11-16T00:19:55.479678
 - **Contains:**
   - `database.ts`
 
@@ -34,13 +34,13 @@
 
 ### Email-Service
 - **Files:** 1
-- **Last Updated:** 2025-11-16T00:17:41.503703
+- **Last Updated:** 2025-11-16T00:19:55.479490
 - **Contains:**
   - `email-service.ts`
 
 ### Llm
 - **Files:** 1
-- **Last Updated:** 2025-11-16T00:17:18.380464
+- **Last Updated:** 2025-11-16T00:19:37.346123
 - **Contains:**
   - `llm.ts`
 
@@ -59,7 +59,7 @@
 
 ### Payment-Processor
 - **Files:** 1
-- **Last Updated:** 2025-11-16T00:17:41.503520
+- **Last Updated:** 2025-11-16T00:19:55.479252
 - **Contains:**
   - `payment-processor.ts`
 

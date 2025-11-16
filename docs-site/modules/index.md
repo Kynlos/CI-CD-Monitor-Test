@@ -14,9 +14,10 @@ Module architecture and design documentation.
 - **[Data Layer](data-layer.md)** - Module architecture and design
 - **[Email Service](email-service.md)** - Module architecture and design
 - **[Llm](llm.md)** - Module architecture and design
+- **[Notification System](notification-system.md)** - Module architecture and design
 - **[Payment Processor](payment-processor.md)** - Module architecture and design
 
-**Total:** 5 modules
+**Total:** 6 modules
 
 ---
 

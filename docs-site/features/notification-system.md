@@ -1,3 +1,8 @@
+---
+title: Notification System
+layout: default
+---
+
 # email-service.ts
 
 *Auto-generated from `./email-service.ts`*
