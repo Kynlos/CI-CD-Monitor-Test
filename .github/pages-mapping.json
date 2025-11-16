@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-16T00:17:20.017521",
+  "last_updated": "2025-11-16T00:17:52.438569",
   "file_to_page": {
     "pages-manager.ts": [
       "api/pages-manager.md",
@@ -16,7 +16,8 @@
     "payment-processor.ts": [
       "api/payments.md",
       "api/payments.md",
-      "features/payment-system.md"
+      "features/payment-system.md",
+      "modules/payment-processor.md"
     ],
     "email-service.ts": [
       "api/notifications.md",
@@ -59,8 +60,8 @@
       "sources": [
         "auth.ts"
       ],
-      "last_updated": "2025-11-16T00:13:24.854592",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:17:47.457697",
+      "last_action": "modify"
     },
     "api/payment-processor.md": {
       "created": "2025-11-15T23:21:08.458910",
@@ -83,7 +84,7 @@
       "sources": [
         "database.ts"
       ],
-      "last_updated": "2025-11-16T00:13:31.207932",
+      "last_updated": "2025-11-16T00:17:52.437582",
       "last_action": "create"
     },
     "api/payments.md": {
@@ -91,7 +92,7 @@
       "sources": [
         "payment-processor.ts"
       ],
-      "last_updated": "2025-11-16T00:13:26.224375",
+      "last_updated": "2025-11-16T00:17:49.749691",
       "last_action": "create"
     },
     "api/notifications.md": {
@@ -99,7 +100,7 @@
       "sources": [
         "email-service.ts"
       ],
-      "last_updated": "2025-11-16T00:13:28.629008",
+      "last_updated": "2025-11-16T00:17:51.082735",
       "last_action": "create"
     },
     "api/llm.md": {
@@ -115,7 +116,7 @@
       "sources": [
         "payment-processor.ts"
       ],
-      "last_updated": "2025-11-16T00:11:09.345003",
+      "last_updated": "2025-11-16T00:17:49.749958",
       "last_action": "create"
     },
     "features/data-layer.md": {
@@ -180,6 +181,14 @@
         "database.ts"
       ],
       "last_updated": "2025-11-16T00:13:31.208039",
+      "last_action": "create"
+    },
+    "modules/payment-processor.md": {
+      "created": "2025-11-16T00:17:49.749815",
+      "sources": [
+        "payment-processor.ts"
+      ],
+      "last_updated": "2025-11-16T00:17:49.749819",
       "last_action": "create"
     }
   },

@@ -2,53 +2,37 @@
 
 *Auto-generated from `./auth.ts`*
 
-# `auth.ts` – Authentication Module
+# Authentication Module (`auth.ts`)
 
 ## Overview
-`auth.ts` provides a lightweight, TypeScript‑typed authentication layer that can be dropped into any Node.js or browser project.  
-It defines:
+The **Authentication module** provides a simple, type‑safe interface for handling user authentication. It exposes:
 
-* **Data contracts** (`User`, `LoginOptions`) for user information and login settings.  
-* An **`AuthService`** class that exposes the core authentication flows: login, logout, token validation, and credential validation.  
-* Two **utility functions** – `hashPassword` and `generateToken` – that are currently stubs but illustrate where hashing and token generation would normally occur.
+- Data structures (`User`, `LoginOptions`) that describe user information and login preferences.
+- A service class (`AuthService`) that implements core authentication flows: login, logout, token validation, and credential verification.
+- Utility helpers (`hashPassword`, `generateToken`) for password hashing and token generation.
 
-> **Note:** The current implementation contains placeholder logic (`return {} as User;`, `return 'token';`). Replace these with real database lookups, hashing libraries (e.g., bcrypt), and JWT libraries (e.g., jsonwebtoken) before using in production.
+> **Note:** The current implementation contains placeholder logic. Replace the stubbed methods with real database lookups, password hashing (e.g., bcrypt), and JWT handling for production use.
 
 ---
 
 ## Exports
 
-| Export | Type | Purpose |
-|--------|------|---------|
-| `User` | `interface` | Shape of a user object returned by the service. |
-| `LoginOptions` | `interface` | Optional settings for the login flow. |
-| `AuthService` | `class` | Core authentication service. |
-| `hashPassword` | `function` | Utility to hash plain‑text passwords. |
-| `generateToken` | `function` | Utility to create a JWT‑style token. |
+| Export | Type | Description |
+|--------|------|-------------|
+| `User` | **Interface** | Represents a user record. |
+| `LoginOptions` | **Interface** | Optional settings for the login flow. |
+| `AuthService` | **Class** | Core authentication service. |
+| `hashPassword` | **Function** | Hashes a plain‑text password. |
+| `generateToken` | **Function** | Generates a JWT or similar token for a user. |
 
 ---
 
-## Detailed API
+## Usage Examples
 
 ### 1. `User` Interface
-
 ```ts
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-}
-```
+import { User } from './auth';
 
-| Property | Type   | Description |
-|----------|--------|-------------|
-| `id`     | `string` | Unique identifier for the user. |
-| `username` | `string` | User’s login name. |
-| `email` | `string` | User’s email address. |
-
-**Usage**
-
-```ts
 const user: User = {
   id: '123',
   username: 'alice',
@@ -56,212 +40,111 @@ const user: User = {
 };
 ```
 
----
-
 ### 2. `LoginOptions` Interface
-
 ```ts
-export interface LoginOptions {
-  rememberMe?: boolean;
-  timeout?: number;
-}
-```
+import { LoginOptions } from './auth';
 
-| Property | Type   | Description |
-|----------|--------|-------------|
-| `rememberMe` | `boolean` | If `true`, extend the session lifetime. |
-| `timeout` | `number` | Custom timeout in milliseconds for the login session. |
-
-**Usage**
-
-```ts
 const options: LoginOptions = {
   rememberMe: true,
-  timeout: 3600000, // 1 hour
+  timeout: 3600, // seconds
 };
 ```
 
----
-
-### 3. `AuthService` Class
-
+### 3. `AuthService`
 ```ts
-export class AuthService {
-  async login(username: string, password: string, options?: LoginOptions): Promise<User>;
-  async logout(userId: string): Promise<void>;
-  async validateToken(token: string): Promise<User>;
-  private async validateCredentials(username: string, password: string): Promise<User>;
-}
-```
+import { AuthService, User, LoginOptions } from './auth';
 
-#### 3.1 `login`
-
-```ts
-async login(username: string, password: string, options?: LoginOptions): Promise<User>
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `username` | `string` | The user’s login name. |
-| `password` | `string` | Plain‑text password. |
-| `options` | `LoginOptions` | Optional login settings. |
-
-**Return Value**  
-`Promise<User>` – Resolves with the authenticated user object.
-
-**Example**
-
-```ts
 const auth = new AuthService();
 
-try {
-  const user = await auth.login('alice', 's3cr3t', { rememberMe: true });
+// Login
+async function loginDemo() {
+  const user: User = await auth.login('alice', 'secret', { rememberMe: true });
   console.log('Logged in:', user);
-} catch (err) {
-  console.error('Login failed:', err);
+}
+
+// Logout
+async function logoutDemo(userId: string) {
+  await auth.logout(userId);
+  console.log('Logged out');
+}
+
+// Validate token
+async function validateDemo(token: string) {
+  const user = await auth.validateToken(token);
+  console.log('Token belongs to:', user);
 }
 ```
-
----
-
-#### 3.2 `logout`
-
-```ts
-async logout(userId: string): Promise<void>
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `userId` | `string` | Identifier of the user to log out. |
-
-**Return Value**  
-`Promise<void>` – Resolves when the session is cleared.
-
-**Example**
-
-```ts
-await auth.logout('123');
-console.log('User logged out');
-```
-
----
-
-#### 3.3 `validateToken`
-
-```ts
-async validateToken(token: string): Promise<User>
-```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `token` | `string` | JWT or session token. |
-
-**Return Value**  
-`Promise<User>` – Resolves with the user associated with the token, or rejects if the token is invalid.
-
-**Example**
-
-```ts
-try {
-  const user = await auth.validateToken('eyJhbGciOiJI...');
-  console.log('Token valid for:', user.username);
-} catch (err) {
-  console.warn('Invalid token');
-}
-```
-
----
-
-#### 3.4 `validateCredentials` (private)
-
-```ts
-private async validateCredentials(username: string, password: string): Promise<User>
-```
-
-*Internal helper that would normally query the database and compare hashed passwords.*
-
----
 
 ### 4. `hashPassword`
-
 ```ts
-export function hashPassword(password: string): string
-```
+import { hashPassword } from './auth';
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `password` | `string` | Plain‑text password to hash. |
-
-**Return Value**  
-`string` – Hashed password (currently returns the input unchanged).
-
-**Example**
-
-```ts
-const hashed = hashPassword('myPassword');
+const hashed = hashPassword('myPassword123');
 console.log('Hashed password:', hashed);
 ```
 
-> **Replace** this stub with a real hashing algorithm (e.g., `bcrypt.hashSync(password, saltRounds)`).
-
----
-
 ### 5. `generateToken`
-
 ```ts
-export function generateToken(userId: string): string
+import { generateToken } from './auth';
+
+const token = generateToken('123'); // userId
+console.log('JWT:', token);
 ```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `userId` | `string` | Identifier of the user for whom to generate a token. |
-
-**Return Value**  
-`string` – A token string (currently a static placeholder).
-
-**Example**
-
-```ts
-const token = generateToken('123');
-console.log('Generated token:', token);
-```
-
-> **Replace** this stub with a real JWT generator (e.g., `jwt.sign({ sub: userId }, secret, { expiresIn: '1h' })`).
 
 ---
 
-## Quick Start
+## Parameters
+
+| Function | Parameter | Type | Description |
+|----------|-----------|------|-------------|
+| `AuthService.login` | `username` | `string` | Username of the user attempting to log in. |
+| | `password` | `string` | Plain‑text password. |
+| | `options?` | `LoginOptions` | Optional login preferences. |
+| `AuthService.logout` | `userId` | `string` | Identifier of the user to log out. |
+| `AuthService.validateToken` | `token` | `string` | JWT or session token to validate. |
+| `AuthService.validateCredentials` | `username` | `string` | Username to look up. |
+| | `password` | `string` | Password to verify. |
+| `hashPassword` | `password` | `string` | Plain‑text password to hash. |
+| `generateToken` | `userId` | `string` | User ID to embed in the token. |
+
+---
+
+## Return Values
+
+| Function | Return Type | Description |
+|----------|-------------|-------------|
+| `AuthService.login` | `Promise<User>` | Resolves to the authenticated `User` object. |
+| `AuthService.logout` | `Promise<void>` | Resolves when the session is cleared. |
+| `AuthService.validateToken` | `Promise<User>` | Resolves to the `User` associated with the token. |
+| `AuthService.validateCredentials` | `Promise<User>` | Resolves to the `User` if credentials are valid. |
+| `hashPassword` | `string` | Returns the hashed password (currently a placeholder). |
+| `generateToken` | `string` | Returns a token string (currently a placeholder). |
+
+---
+
+## Extending / Customizing
+
+- **Replace placeholders**: Implement real hashing (e.g., `bcrypt`) and JWT logic (`jsonwebtoken`).
+- **Add persistence**: Hook `validateCredentials` to a database or external auth provider.
+- **Error handling**: Throw descriptive errors for failed logins, expired tokens, etc.
+- **Unit tests**: Write tests for each method to ensure reliability.
+
+---
+
+### Quick Reference
 
 ```ts
 import { AuthService, hashPassword, generateToken } from './auth';
 
 const auth = new AuthService();
 
-// 1. Register a new user (pseudo‑code)
-const plainPassword = 's3cr3t';
-const hashedPassword = hashPassword(plainPassword);
-// Store `hashedPassword` in DB alongside username/email
+async function demo() {
+  const hashed = hashPassword('mypassword');
+  const token = generateToken('user-id-123');
 
-// 2. Login
-const user = await auth.login('alice', plainPassword);
-
-// 3. Generate a session token
-const token = generateToken(user.id);
-
-// 4. Validate the token later
-const validatedUser = await auth.validateToken(token);
-
-// 5. Logout
-await auth.logout(user.id);
+  const user = await auth.login('bob', 'mypassword');
+  console.log(user);
+}
 ```
 
----
-
-## Summary
-
-- **`User`** – Basic user data contract.  
-- **`LoginOptions`** – Optional login flags.  
-- **`AuthService`** – Core async methods for login, logout, and token validation.  
-- **`hashPassword`** & **`generateToken`** – Simple placeholders for hashing and token creation.
-
-Replace the placeholder logic with real implementations before deploying. Happy coding!
+> **Tip:** Keep the authentication logic isolated in this module; other parts of your application can import `AuthService` and the helper functions without needing to know the underlying implementation details.

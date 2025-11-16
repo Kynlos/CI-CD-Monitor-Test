@@ -7,28 +7,26 @@ layout: default
 
 *Auto-generated from `./payment-processor.ts`*
 
-# Payment‑Processor Module
+# Payment Processor Module
 
-The **payment‑processor** module is a lightweight, TypeScript‑based library that handles the core payment flow for an e‑commerce or subscription service.  
-It exposes a small set of public types and async functions that:
+The **payment‑processor.ts** module provides a lightweight abstraction for handling payment transactions, refunds, and transaction history.  
+It exposes three async functions and two TypeScript interfaces that can be imported into any Node.js/TypeScript project.
 
-1. **Validate** and **charge** a payment method.  
-2. **Refund** a completed transaction.  
-3. **Retrieve** all transactions for a specific user.  
-
-The implementation is intentionally simple – it simulates external payment provider calls and uses in‑memory helpers.  In a real application you would replace the stubbed helpers (`chargePaymentMethod`, `getTransaction`, `processRefund`) with calls to a database or a payment gateway SDK.
+> **Note** – The implementation is intentionally minimal and uses in‑memory stubs. Replace the helper functions (`chargePaymentMethod`, `getTransaction`, `processRefund`) with real payment‑gateway integrations for production use.
 
 ---
 
 ## 1. Overview
 
-| Feature | What it does | Where it lives |
-|---------|--------------|----------------|
-| `processPayment` | Validates the amount, creates a transaction record, calls a simulated payment provider, and returns the transaction with a final status. | `processPayment()` |
-| `refundTransaction` | Looks up a transaction, ensures it is completed, processes a refund, and returns an updated transaction marked as **failed** (used here to indicate a refunded state). | `refundTransaction()` |
-| `getUserTransactions` | Fetches all transactions belonging to a user. (Stubbed to return an empty array.) | `getUserTransactions()` |
-| `PaymentMethod` | Describes a payment instrument (card, bank, PayPal). | Interface |
-| `Transaction` | Represents a payment record with status, timestamp, and the used payment method. | Interface |
+| Feature | Description |
+|---------|-------------|
+| `processPayment` | Authorises and captures a payment using a supplied `PaymentMethod`. |
+| `refundTransaction` | Issues a refund for a previously completed transaction. |
+| `getUserTransactions` | Retrieves all transactions belonging to a specific user. |
+| `PaymentMethod` | Describes a payment instrument (card, bank, PayPal). |
+| `Transaction` | Represents a payment record with status, amount, and metadata. |
+
+The module is designed to be **stateless** – all persistence logic is delegated to the helper functions. This keeps the core logic testable and agnostic of any particular database or payment provider.
 
 ---
 
@@ -36,71 +34,68 @@ The implementation is intentionally simple – it simulates external payment pro
 
 | Export | Type | Description |
 |--------|------|-------------|
-| `PaymentMethod` | `interface` | Defines the shape of a payment instrument. |
+| `PaymentMethod` | `interface` | Defines a payment instrument. |
 | `Transaction` | `interface` | Represents a payment transaction. |
-| `processPayment` | `async function` | Processes a new payment. |
-| `refundTransaction` | `async function` | Refunds a completed transaction. |
-| `getUserTransactions` | `async function` | Retrieves all transactions for a user. |
+| `processPayment` | `function` | Processes a new payment. |
+| `refundTransaction` | `function` | Refunds a completed transaction. |
+| `getUserTransactions` | `function` | Retrieves all transactions for a user. |
 
 ---
 
 ## 3. Usage Examples
 
-> **Tip**: All functions return `Promise`s, so use `await` or `.then()`.
-
-### 3.1. Process a Payment
+> **Prerequisites** – Install the module (or copy the file) and import the required symbols.
 
 ```ts
-import { processPayment, PaymentMethod } from './payment-processor';
+import {
+  PaymentMethod,
+  Transaction,
+  processPayment,
+  refundTransaction,
+  getUserTransactions
+} from './payment-processor';
+```
 
+### 3.1 Process a Payment
+
+```ts
 const card: PaymentMethod = {
   id: 'pm_123',
   type: 'card',
   last4: '4242',
-  expiryDate: '12/24',
+  expiryDate: '12/25'
 };
 
 async function charge() {
   try {
-    const transaction = await processPayment(5000, card); // $50.00
-    console.log('Transaction:', transaction);
+    const tx: Transaction = await processPayment(5000, card); // $50.00
+    console.log('Transaction status:', tx.status); // 'completed' or 'failed'
   } catch (err) {
     console.error('Payment failed:', err.message);
   }
 }
-
-charge();
 ```
 
-### 3.2. Refund a Transaction
+### 3.2 Refund a Transaction
 
 ```ts
-import { refundTransaction } from './payment-processor';
-
 async function refund() {
   try {
-    const refunded = await refundTransaction('txn_abcdef123');
-    console.log('Refunded transaction:', refunded);
+    const refundedTx = await refundTransaction('txn_1699999999999_abc123');
+    console.log('Refunded transaction:', refundedTx);
   } catch (err) {
     console.error('Refund error:', err.message);
   }
 }
-
-refund();
 ```
 
-### 3.3. Get All Transactions for a User
+### 3.3 Retrieve User Transactions
 
 ```ts
-import { getUserTransactions } from './payment-processor';
-
 async function listTransactions() {
-  const userId = 'user_456';
-  const txns = await getUserTransactions(userId);
-  console.log(`Transactions for ${userId}:`, txns);
+  const userTxs = await getUserTransactions('user_456');
+  console.log('User has', userTxs.length, 'transactions');
 }
-
-listTransactions();
 ```
 
 ---
@@ -111,20 +106,20 @@ listTransactions();
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `amount` | `number` | Amount to charge **in cents** (e.g., `5000` = $50.00). Must be > 0. |
+| `amount` | `number` | Amount to charge **in cents** (e.g., 5000 = $50.00). Must be > 0. |
 | `method` | `PaymentMethod` | The payment instrument to use. |
 
 ### `refundTransaction(transactionId: string)`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `transactionId` | `string` | The ID of the transaction to refund. |
+| `transactionId` | `string` | The unique identifier of the transaction to refund. |
 
 ### `getUserTransactions(userId: string)`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `userId` | `string` | The ID of the user whose transactions you want to retrieve. |
+| `userId` | `string` | The user’s unique identifier. |
 
 ---
 
@@ -132,16 +127,43 @@ listTransactions();
 
 | Function | Return Type | Description |
 |----------|-------------|-------------|
-| `processPayment` | `Promise<Transaction>` | A `Transaction` object with a status of **pending → completed** or **failed**. |
-| `refundTransaction` | `Promise<Transaction>` | The original transaction object, but with `status` set to **failed** and a new `timestamp`. |
-| `getUserTransactions` | `Promise<Transaction[]>` | An array of `Transaction` objects belonging to the user (currently empty). |
+| `processPayment` | `Promise<Transaction>` | Resolves to a `Transaction` object whose `status` is `'completed'` on success or `'failed'` on failure. |
+| `refundTransaction` | `Promise<Transaction>` | Resolves to the original transaction object with `status` set to `'failed'` (indicating a refund). The `timestamp` is updated to the refund time. |
+| `getUserTransactions` | `Promise<Transaction[]>` | Resolves to an array of `Transaction` objects belonging to the specified user. Currently returns an empty array – replace the stub with a real query. |
 
-### `Transaction` Interface
+---
+
+## 6. Error Handling
+
+| Function | Error Condition | Error Message |
+|----------|-----------------|---------------|
+| `processPayment` | `amount <= 0` | `'Amount must be positive'` |
+| `refundTransaction` | Transaction not found | `'Not implemented'` (from `getTransaction`) |
+| `refundTransaction` | Transaction status ≠ `'completed'` | `'Can only refund completed transactions'` |
+
+All errors are thrown as plain `Error` objects; catch them with `try/catch` in your application code.
+
+---
+
+## 7. Extending the Module
+
+1. **Persist Transactions** – Replace the `getTransaction` and `getUserTransactions` stubs with real database queries (e.g., Prisma, TypeORM, MongoDB).  
+2. **Integrate a Payment Provider** – Implement `chargePaymentMethod` and `processRefund` using Stripe, PayPal, or any other gateway SDK.  
+3. **Add Logging / Metrics** – Wrap the async functions with logging or telemetry to trace payment flows.
+
+---
+
+## 8. Quick Reference
 
 ```ts
-interface Transaction {
-  id: string;          // e.g., "txn_1690000000_abc123xyz"
-  amount: number;      // cents
-  currency: string;    // always "USD" in this stub
-  status: 'pending' | 'completed' | 'failed';
-  timestamp:
+// Interfaces
+interface PaymentMethod { ... }
+interface Transaction { ... }
+
+// Functions
+async function processPayment(amount: number, method: PaymentMethod): Promise<Transaction>
+async function refundTransaction(transactionId: string): Promise<Transaction>
+async function getUserTransactions(userId: string): Promise<Transaction[]>
+```
+
+Happy coding! 🚀
