@@ -1,0 +1,122 @@
+[
+  {
+    "file": "./auth.ts",
+    "language": "typescript",
+    "quality_score": {
+      "total": 95,
+      "documentation": 25,
+      "complexity": 30,
+      "maintainability": 40,
+      "breakdown": {
+        "documentation": {
+          "score": 25,
+          "max": 30,
+          "details": "15.6% documentation coverage (7/45 lines)"
+        },
+        "complexity": {
+          "score": 30,
+          "max": 30,
+          "details": "0 decision points"
+        },
+        "maintainability": {
+          "score": 40,
+          "max": 40,
+          "details": "0 long lines, avg function: 4 lines, max nesting: 2"
+        }
+      },
+      "grade": "A+"
+    },
+    "security_vulnerabilities": [],
+    "performance_issues": []
+  },
+  {
+    "file": "./payment-processor.ts",
+    "language": "typescript",
+    "quality_score": {
+      "total": 100,
+      "documentation": 30,
+      "complexity": 30,
+      "maintainability": 40,
+      "breakdown": {
+        "documentation": {
+          "score": 30,
+          "max": 30,
+          "details": "27.6% documentation coverage (29/105 lines)"
+        },
+        "complexity": {
+          "score": 30,
+          "max": 30,
+          "details": "4 decision points"
+        },
+        "maintainability": {
+          "score": 40,
+          "max": 40,
+          "details": "0 long lines, avg function: 11 lines, max nesting: 2"
+        }
+      },
+      "grade": "A+"
+    },
+    "security_vulnerabilities": [],
+    "performance_issues": []
+  },
+  {
+    "file": "./email-service.ts",
+    "language": "typescript",
+    "quality_score": {
+      "total": 95,
+      "documentation": 25,
+      "complexity": 30,
+      "maintainability": 40,
+      "breakdown": {
+        "documentation": {
+          "score": 25,
+          "max": 30,
+          "details": "19.8% documentation coverage (20/101 lines)"
+        },
+        "complexity": {
+          "score": 30,
+          "max": 30,
+          "details": "5 decision points"
+        },
+        "maintainability": {
+          "score": 40,
+          "max": 40,
+          "details": "0 long lines, avg function: 17 lines, max nesting: 3"
+        }
+      },
+      "grade": "A+"
+    },
+    "security_vulnerabilities": [],
+    "performance_issues": []
+  },
+  {
+    "file": "./database.ts",
+    "language": "typescript",
+    "quality_score": {
+      "total": 90,
+      "documentation": 20,
+      "complexity": 30,
+      "maintainability": 40,
+      "breakdown": {
+        "documentation": {
+          "score": 20,
+          "max": 30,
+          "details": "14.0% documentation coverage (6/43 lines)"
+        },
+        "complexity": {
+          "score": 30,
+          "max": 30,
+          "details": "0 decision points"
+        },
+        "maintainability": {
+          "score": 40,
+          "max": 40,
+          "details": "0 long lines, avg function: 4 lines, max nesting: 2"
+        }
+      },
+      "grade": "A+"
+    },
+    "security_vulnerabilities": [],
+    "performance_issues": []
+  }
+]

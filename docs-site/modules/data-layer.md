@@ -1,23 +1,28 @@
+```markdown
 ---
 title: Data Layer
 layout: default
+last_updated: 2025-11-16
 ---
 
 # database.ts
 
 *Auto-generated from `./database.ts`*
 
-# database.ts – API Documentation
+# `database.ts` – API Documentation
 
 ## Overview
-`database.ts` provides a lightweight abstraction for managing a database connection and executing SQL queries.  
-It exposes:
+`database.ts` provides a lightweight abstraction for connecting to a relational database, executing SQL queries, and safely sanitizing user input.  
+It intentionally contains only the minimal plumbing needed to illustrate the API; the actual driver logic (e.g., `pg`, `mysql2`, `sqlite3`) is omitted and should be implemented in the placeholder methods `connect`, `query`, and `disconnect`.
 
-- A `DatabaseConfig` interface for connection settings.  
-- A `Database` class that handles connection lifecycle and query execution.  
-- Helper functions: `createConnection` (factory) and `sanitizeInput` (basic SQL‑injection guard).
+The module exports:
 
-The module is intentionally minimal and can be extended with a real driver (e.g., `pg`, `mysql2`) by implementing the placeholder methods.
+| Export | Type | Description |
+|--------|------|-------------|
+| `DatabaseConfig` | **Interface** | Configuration object for a database connection. |
+| `Database` | **Class** | Encapsulates a database connection and exposes `connect`, `query`, and `disconnect` methods. |
+| `createConnection` | **Function** | Convenience factory that creates a `Database` instance and automatically connects it. |
+| `sanitizeInput` | **Function** | Utility that removes potentially dangerous characters from a string. |
 
 ---
 
@@ -29,6 +34,66 @@ The module is intentionally minimal and can be extended with a real driver (e.g.
 | `Database` | **class** | Represents a database connection with methods to connect, query, and disconnect. |
 | `createConnection` | **function** | Factory that creates and connects a `Database` instance. |
 | `sanitizeInput` | **function** | Removes potentially dangerous characters from a string. |
+
+### 1. `DatabaseConfig` (Interface)
+
+```ts
+export interface DatabaseConfig {
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  password: string;
+}
+```
+
+- **Purpose** – Describes the connection parameters required by the `Database` class.
+
+### 2. `Database` (Class)
+
+```ts
+export class Database {
+  private config: DatabaseConfig;
+
+  constructor(config: DatabaseConfig);
+  async connect(): Promise<void>;
+  async query(sql: string, params?: any[]): Promise<any[]>;
+  async disconnect(): Promise<void>;
+}
+```
+
+- **Constructor** – Instantiates a new `Database` object with the supplied configuration.  
+- **`connect()`** – Opens a connection to the database. *Returns:* `Promise<void>`  
+- **`query(sql, params?)`** – Executes a SQL statement.  
+  - `sql` – The SQL string to execute.  
+  - `params` – Optional array of parameters for prepared statements.  
+  *Returns:* `Promise<any[]>` – Array of rows returned by the query.  
+- **`disconnect()`** – Closes the connection. *Returns:* `Promise<void>`  
+
+> **Note**: Replace the bodies of `connect`, `query`, and `disconnect` with calls to your preferred driver (e.g., `pg`, `mysql`, `sqlite3`).
+
+### 3. `createConnection` (Function)
+
+```ts
+export async function createConnection(config: DatabaseConfig): Promise<Database> {
+  const db = new Database(config);
+  await db.connect();
+  return db;
+}
+```
+
+- **Purpose** – Convenience factory that creates a `Database` instance and automatically connects it.
+
+### 4. `sanitizeInput` (Function)
+
+```ts
+export function sanitizeInput(input: string): string {
+  // Very naive sanitisation – replace characters that are commonly used in SQL injection.
+  return input.replace(/[;'"]/g, '');
+}
+```
+
+- **Purpose** – Removes potentially dangerous characters from a string before it is interpolated into a query.
 
 ---
 
@@ -95,83 +160,31 @@ const safe = sanitizeInput(raw);
 ## Parameters
 
 ### `DatabaseConfig`
-| Property | Type | Description |
-|----------|------|-------------|
-| `host` | `string` | Database server hostname or IP. |
-| `port` | `number` | TCP port number. |
-| `database` | `string` | Name of the database to connect to. |
-| `username` | `string` | User credential. |
-| `password` | `string` | User credential. |
+
+| Property | Type   | Description                              |
+|----------|--------|------------------------------------------|
+| `host`   | string | Database server hostname or IP.          |
+| `port`   | number | TCP port number.                         |
+| `database`| string| Name of the database to connect to.      |
+| `username`| string| User credential.                         |
+| `password`| string| User credential.                         |
 
 ### `Database.connect()`
 No parameters.
 
 ### `Database.query(sql, params?)`
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sql` | `string` | SQL statement to execute. |
-| `params` | `any[]` (optional) | Positional parameters for parameterized queries. |
 
-### `Database.disconnect()`
-No parameters.
-
-### `createConnection(config)`
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `config` | `DatabaseConfig` | Connection configuration. |
-
-### `sanitizeInput(input)`
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `input` | `string` | Raw user input that may contain SQL meta‑characters. |
-
----
-
-## Return Values
-
-| Function | Returns | Notes |
-|----------|---------|-------|
-| `Database.connect()` | `Promise<void>` | Resolves when the connection is established. |
-| `Database.query(sql, params?)` | `Promise<any[]>` | Resolves with an array of rows (empty array if none). |
-| `Database.disconnect()` | `Promise<void>` | Resolves when the connection is closed. |
-| `createConnection(config)` | `Promise<Database>` | Resolves with a connected `Database` instance. |
-| `sanitizeInput(input)` | `string` | Returns the input string with `'`, `;`, and `"` removed. |
-
----
-
-### Extending the Implementation
-
-The placeholder methods (`connect`, `query`, `disconnect`) should be replaced with actual driver logic. For example, using `pg`:
+| Parameter | Type    | Description                                   |
+|-----------|---------|-----------------------------------------------|
+| `sql`     | string  | SQL statement to execute.                     |
+| `params`  | any[]   | (optional) Positional parameters for prepared statements. |
 
 ```ts
-import { Client } from 'pg';
-
-export class Database {
-  private client: Client;
-
-  constructor(private config: DatabaseConfig) {
-    this.client = new Client({
-      host: config.host,
-      port: config.port,
-      database: config.database,
-      user: config.username,
-      password: config.password,
-    });
-  }
-
-  async connect() {
-    await this.client.connect();
-  }
-
-  async query(sql: string, params?: any[]) {
-    const res = await this.client.query(sql, params);
-    return res.rows;
-  }
-
-  async disconnect() {
-    await this.client.end();
-  }
-}
+// Example:
+await db.query('SELECT * FROM users WHERE id = $1', [42]);
 ```
 
-Replace the placeholder comments accordingly to make the module functional.
+--- 
+
+*Generated by the documentation editor on 2025-11-16.* 
+```

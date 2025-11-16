@@ -10,18 +10,30 @@ last_updated: 2025-11-16
 *Auto-generated from `./payment-processor.ts`*
 
 # Payment Processor Module  
-**File:** `payment-processor.ts`
+
+The **payment‑processor** module is a lightweight, self‑contained library that handles the core payment flow for an e‑commerce or subscription service.  
+It provides a simple API to:
+
+1. **Create a payment method representation** – a minimal object describing a card, bank account, or PayPal account.  
+2. **Charge a payment method** – `processPayment` creates a transaction, attempts to charge the method, and returns the transaction status.  
+3. **Refund a completed transaction** – `refundTransaction` reverses a successful transaction and marks it as refunded.  
+4. **Retrieve a user’s transaction history** – `getUserTransactions` returns all transactions belonging to a given user.
+
+All operations are asynchronous and return plain JavaScript objects that can be persisted or sent over the network.
+
+> **NOTE** – The current implementation uses in‑memory stubs and random success rates. In a production environment you would replace the helper functions (`chargePaymentMethod`, `getTransaction`, `processRefund`) with real calls to a payment gateway and a database.
 
 ---
 
-## Overview  
-The **Payment Processor** module provides a lightweight abstraction for handling payment transactions and refunds. It supports three payment‑method types (`card`, `bank`, `paypal`) and exposes a simple API to:
+## Overview
 
-1. **Process a payment** – create a transaction, charge the payment method, and return the transaction status.  
-2. **Refund a transaction** – reverse a completed transaction and mark it as refunded.  
-3. **Retrieve a user’s transaction history** – fetch all transactions for a specific user.  
-
-The module is intentionally minimal and uses in‑memory helpers to simulate database and external‑provider interactions. It can be dropped into any TypeScript project that needs a quick payment‑processing prototype or a test harness.
+| Feature | What it does |
+|---------|--------------|
+| **PaymentMethod** | A lightweight representation of a card, bank account, or PayPal account. |
+| **Transaction** | Immutable snapshot of a payment attempt, including status, amount, and the payment method used. |
+| **processPayment** | Validates the amount, creates a transaction record, and attempts to charge the payment method. |
+| **refundTransaction** | Looks up a completed transaction and issues a refund. |
+| **getUserTransactions** | Returns all transactions for a given user (currently returns an empty array). |
 
 ---
 
@@ -90,17 +102,21 @@ const card: PaymentMethod = {
   id: 'pm_123',
   type: 'card',
   last4: '4242',
-  expiryDate: '12/2026',
+  expiryDate: '12/27',
 };
 
-async function charge() {
-  try {
-    const tx = await processPayment(5000, card); // $50.00
-    console.log('Transaction:', tx);
-  } catch (err) {
-    console.error('Payment failed:', err.message);
-  }
+async function run() {
+  const transaction = await processPayment({
+    amount: 5000,          // $50.00
+    currency: 'USD',
+    methodId: card.id,
+    userId: 'user_456',
+  });
+
+  console.log('Transaction result:', transaction);
 }
+
+run();
 ```
 
 ### 2. `refundTransaction`
@@ -108,14 +124,13 @@ async function charge() {
 ```ts
 import { refundTransaction } from './payment-processor';
 
-async function refund() {
-  try {
-    const refundedTx = await refundTransaction('txn_1690000000_abc123');
-    console.log('Refunded transaction:', refundedTx);
-  } catch (err) {
-    console.error('Refund error:', err.message);
-  }
+async function refundDemo(transactionId: string) {
+  const refunded = await refundTransaction(transactionId);
+  console.log('Refunded transaction:', refunded);
 }
+
+// Example usage
+refundDemo('tx_789');
 ```
 
 ### 3. `getUserTransactions`
@@ -123,46 +138,15 @@ async function refund() {
 ```ts
 import { getUserTransactions } from './payment-processor';
 
-async function listUserTxs() {
-  const txs = await getUserTransactions('user_42');
-  console.log(`User has ${txs.length} transactions`);
+async function listUserTxns(userId: string) {
+  const txns = await getUserTransactions(userId);
+  console.log(`Transactions for ${userId}:`, txns);
 }
+
+// Example usage
+listUserTxns('user_456');
 ```
-
----
-
-## Parameters
-
-| Function               | Parameter      | Type            | Description                                                            |
-|------------------------|----------------|-----------------|------------------------------------------------------------------------|
-| `processPayment`       | `amount`       | `number`        | Amount to charge **in cents** (e.g., `5000` = $50.00). Must be > 0.    |
-|                        | `method`       | `PaymentMethod` | The payment instrument to use.                                         |
-| `refundTransaction`    | `transactionId`| `string`        | Identifier of the transaction to refund.                               |
-| `getUserTransactions`  | `userId`       | `string`        | Identifier of the user whose transactions are requested.              |
-
-### `PaymentMethod` fields
-
-| Field       | Type                                 | Description                              |
-|-------------|--------------------------------------|------------------------------------------|
-| `id`        | `string`                             | Unique identifier for the payment method.|
-| `type`      | `'card' \| 'bank' \| 'paypal'`       | Type of payment method.                  |
-| `last4`     | `string`                             | Last four digits of the card/account.    |
-| `expiryDate`| `string` (optional)                  | Expiry date in `MM/YY` format.           |
-
-### `Transaction` fields
-
-| Field       | Type                                 | Description                                          |
-|-------------|--------------------------------------|------------------------------------------------------|
-| `id`        | `string`                             | Unique transaction ID.                               |
-| `amount`    | `number`                             | Amount in cents.                                     |
-| `currency`  | `string`                             | ISO currency code (e.g., `'USD'`).                  |
-| `status`    | `'pending' \| 'succeeded' \| 'failed' \| 'refunded'` | Current status of the transaction. |
-| `methodId`  | `string`                             | ID of the `PaymentMethod` used.                      |
-| `userId`    | `string`                             | Owner of the transaction.                            |
-| `createdAt` | `Date`                               | When the transaction was created.                    |
-| `updatedAt` | `Date`                               | Last update timestamp (e.g., after a refund).       |
 
 --- 
 
-*Generated on 2025‑11‑16.*
-```
+*Generated documentation – keep in sync with `payment-processor.ts`.*

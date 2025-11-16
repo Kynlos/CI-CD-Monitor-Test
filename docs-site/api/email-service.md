@@ -1,3 +1,4 @@
+```markdown
 ---
 title: Email Service
 layout: default
@@ -12,11 +13,8 @@ last_updated: 2025-11-16
 
 ## Overview
 The **Email Service** module provides a lightweight, type‑safe API for sending single or bulk emails.  
-
-- Validates recipient addresses and optional CC/BCC lists.  
-- Supports plain‑text and HTML bodies, as well as file attachments.  
-- Returns a structured result indicating success, the provider’s message ID, or an error message.  
-- Designed to be provider‑agnostic; the actual transport is abstracted behind `sendViaProvider`, which can be swapped out for a real SMTP/SendGrid/Mailgun/SES implementation in production.
+It validates recipients, supports plain‑text and HTML bodies, handles CC/BCC, and allows attachments.  
+The implementation is intentionally minimal – the `sendViaProvider` function is a stub that simulates an external provider (SendGrid, Mailgun, etc.). Replace it with real provider logic in production.
 
 ---
 
@@ -24,13 +22,11 @@ The **Email Service** module provides a lightweight, type‑safe API for sending
 
 | Export | Type | Description |
 |--------|------|-------------|
-| `EmailOptions` | **Interface** | Configuration for a single email. |
-| `Attachment` | **Interface** | Represents an email attachment. |
+| `EmailOptions` | **Interface** | Configuration object for a single email. |
+| `Attachment` | **Interface** | Represents a file attachment. |
 | `EmailResult` | **Interface** | Result of an email send operation. |
-| `sendEmail(options: EmailOptions)` | **Async Function** | Sends a single email. |
-| `sendBulkEmails(recipients: string[], template: Omit<EmailOptions, 'to'>)` | **Async Function** | Sends the same template to multiple recipients. |
-
-> **Note:** `isValidEmail` and `sendViaProvider` are internal helpers and are **not** exported.
+| `sendEmail` | **Function** | Sends a single email. |
+| `sendBulkEmails` | **Function** | Sends the same template to many recipients. |
 
 ---
 
@@ -42,14 +38,14 @@ The **Email Service** module provides a lightweight, type‑safe API for sending
 import { sendEmail, EmailOptions } from './email-service';
 
 const email: EmailOptions = {
-  to: ['alice@example.com', 'bob@example.com'],
-  subject: 'Welcome to Our Service',
-  body: 'Hello, thanks for joining us!',
-  html: '<p>Hello, <strong>thanks</strong> for joining us!</p>',
-  cc: ['manager@example.com'],
+  to: ['alice@example.com'],
+  subject: 'Welcome!',
+  body: 'Hello Alice, welcome aboard.',
+  html: '<p>Hello <strong>Alice</strong>, welcome aboard.</p>',
+  cc: ['bob@example.com'],
   attachments: [
     {
-      filename: 'terms.pdf',
+      filename: 'welcome.pdf',
       content: Buffer.from('PDF content here', 'utf-8'),
       contentType: 'application/pdf',
     },
@@ -59,7 +55,7 @@ const email: EmailOptions = {
 const result = await sendEmail(email);
 
 if (result.success) {
-  console.log(`Email sent! Message ID: ${result.messageId}`);
+  console.log(`Email sent, messageId: ${result.messageId}`);
 } else {
   console.error(`Failed to send email: ${result.error}`);
 }
@@ -71,14 +67,14 @@ if (result.success) {
 import { sendBulkEmails, EmailOptions } from './email-service';
 
 const recipients = [
+  'alice@example.com',
   'bob@example.com',
   'carol@example.com',
-  'dave@example.com',
 ];
 
 const template: Omit<EmailOptions, 'to'> = {
   subject: 'Monthly Newsletter',
-  body: 'Here is this month’s newsletter.',
+  body: 'Here is our monthly newsletter.',
   html: '<h1>Monthly Newsletter</h1><p>Enjoy!</p>',
 };
 
@@ -99,9 +95,16 @@ results.forEach((res, idx) => {
 
 ### `sendEmail(options: EmailOptions)`
 
-| Parameter   | Type          | Description                              |
-|-------------|---------------|------------------------------------------|
-| `options`   | `EmailOptions`| Email configuration object.              |
-| `options.to`| `string[]`    | **Required.** Recipients’ email addresses.|
+| Parameter | Type          | Description                              |
+|-----------|---------------|------------------------------------------|
+| `options` | `EmailOptions`| Email configuration object.              |
 
-*(Additional parameter details remain unchanged from the original documentation.)*
+### `sendBulkEmails(recipients: string[], template: Omit<EmailOptions, 'to'>)`
+
+| Parameter   | Type                              | Description                                 |
+|-------------|-----------------------------------|---------------------------------------------|
+| `recipients`| `string[]`                        | List of email addresses to receive the email. |
+| `template`  | `Omit<EmailOptions, 'to'>`        | Email configuration without the `to` field; will be merged with each recipient. |
+
+> **Note:** `isValidEmail` and `sendViaProvider` are internal helpers and are **not** exported.
+```
