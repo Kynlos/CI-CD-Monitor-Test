@@ -10,9 +10,10 @@ User-facing feature documentation and guides.
 
 ## Available Features
 
-*No feature documentation yet. Feature guides will be auto-generated as you develop.*
+- **[Data Layer](data-layer.md)** - Feature guide and tutorial
+- **[Payment System](payment-system.md)** - Feature guide and tutorial
 
-Features provide user-facing documentation on how to use and configure the system.
+**Total:** 2 features
 
 ---
 

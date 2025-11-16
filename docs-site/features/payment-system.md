@@ -1,5 +1,5 @@
 ---
-title: Payments
+title: Payment System
 layout: default
 ---
 

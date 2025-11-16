@@ -1,3 +1,8 @@
+---
+title: Data Layer
+layout: default
+---
+
 # database.ts
 
 *Auto-generated from `./database.ts`*
