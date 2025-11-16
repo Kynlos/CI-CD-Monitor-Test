@@ -134,7 +134,7 @@ Be selective - only generate perspectives that add value. Most code needs API do
                 {'role': 'user', 'content': analysis_prompt}
             ],
             temperature=0.2,
-            max_tokens=500,  # Increased from 300 for complete JSON array
+            max_tokens=16000,  # High limit - never truncate JSON
             response_format='json',
             timeout=30,
             use_cache=True
@@ -227,7 +227,7 @@ Decide the BEST action for integrating this into {prefix} documentation:
                 {'role': 'user', 'content': prompt}
             ],
             temperature=0.2,
-            max_tokens=500,  # Increased from 200 - need enough tokens for complete JSON
+            max_tokens=16000,  # High limit - never truncate JSON
             response_format='json',
             timeout=30,
             use_cache=True
