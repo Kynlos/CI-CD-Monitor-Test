@@ -1,4 +1,3 @@
-```markdown
 ---
 title: Email Service
 layout: default
@@ -12,9 +11,9 @@ last_updated: 2025-11-16
 # Email Service Module (`email-service.ts`)
 
 ## Overview
-The **Email Service** module provides a lightweight, type‑safe API for sending single or bulk emails.  
-It validates recipients, supports plain‑text and HTML bodies, handles CC/BCC, and allows attachments.  
-The implementation is intentionally minimal – the `sendViaProvider` function is a stub that simulates an external provider (SendGrid, Mailgun, etc.). Replace it with real provider logic in production.
+The **Email Service** module provides a simple, type‑safe API for sending single or bulk emails.  
+It validates recipients, supports optional CC/BCC, attachments, and HTML bodies, and returns a clear success/error result.  
+The actual transport is abstracted behind `sendViaProvider`, which can be swapped out for a real provider (SendGrid, Mailgun, SES, etc.) without changing the public API.
 
 ---
 
@@ -23,36 +22,27 @@ The implementation is intentionally minimal – the `sendViaProvider` function i
 | Export | Type | Description |
 |--------|------|-------------|
 | `EmailOptions` | **Interface** | Configuration object for a single email. |
-| `Attachment` | **Interface** | Represents a file attachment. |
+| `Attachment` | **Interface** | Represents an email attachment. |
 | `EmailResult` | **Interface** | Result of an email send operation. |
 | `sendEmail` | **Function** | Sends a single email. |
-| `sendBulkEmails` | **Function** | Sends the same template to many recipients. |
+| `sendBulkEmails` | **Function** | Sends the same template to multiple recipients. |
 
 ---
 
 ## Usage Examples
 
-### 1. Sending a single email
+### 1. Sending a Simple Text Email
 
 ```ts
 import { sendEmail, EmailOptions } from './email-service';
 
-const email: EmailOptions = {
+const options: EmailOptions = {
   to: ['alice@example.com'],
   subject: 'Welcome!',
-  body: 'Hello Alice, welcome aboard.',
-  html: '<p>Hello <strong>Alice</strong>, welcome aboard.</p>',
-  cc: ['bob@example.com'],
-  attachments: [
-    {
-      filename: 'welcome.pdf',
-      content: Buffer.from('PDF content here', 'utf-8'),
-      contentType: 'application/pdf',
-    },
-  ],
+  body: 'Hello Alice, welcome to our platform.',
 };
 
-const result = await sendEmail(email);
+const result = await sendEmail(options);
 
 if (result.success) {
   console.log(`Email sent, messageId: ${result.messageId}`);
@@ -61,7 +51,38 @@ if (result.success) {
 }
 ```
 
-### 2. Sending bulk emails
+### 2. Sending an HTML Email with CC, BCC, and Attachments
+
+```ts
+import { sendEmail, EmailOptions, Attachment } from './email-service';
+import fs from 'fs';
+
+const attachment: Attachment = {
+  filename: 'report.pdf',
+  content: fs.readFileSync('./report.pdf'), // Buffer
+  contentType: 'application/pdf',
+};
+
+const options: EmailOptions = {
+  to: ['bob@example.com'],
+  cc: ['carol@example.com'],
+  bcc: ['dave@example.com'],
+  subject: 'Monthly Report',
+  body: 'Please find the report attached.',
+  html: '<p>Please find the <strong>report</strong> attached.</p>',
+  attachments: [attachment],
+};
+
+const result = await sendEmail(options);
+
+if (result.success) {
+  console.log(`Email sent, messageId: ${result.messageId}`);
+} else {
+  console.error(`Failed to send email: ${result.error}`);
+}
+```
+
+### 3. Sending Bulk Emails
 
 ```ts
 import { sendBulkEmails, EmailOptions } from './email-service';
@@ -104,7 +125,6 @@ results.forEach((res, idx) => {
 | Parameter   | Type                              | Description                                 |
 |-------------|-----------------------------------|---------------------------------------------|
 | `recipients`| `string[]`                        | List of email addresses to receive the email. |
-| `template`  | `Omit<EmailOptions, 'to'>`        | Email configuration without the `to` field; will be merged with each recipient. |
+| `template`  | `Omit<EmailOptions, 'to'>`        | Email template (subject, body, etc.) without the `to` field. |
 
-> **Note:** `isValidEmail` and `sendViaProvider` are internal helpers and are **not** exported.
-```
+---

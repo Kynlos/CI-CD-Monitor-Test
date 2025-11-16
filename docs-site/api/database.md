@@ -1,4 +1,3 @@
-```markdown
 ---
 title: Database
 layout: default
@@ -22,36 +21,31 @@ _Last updated: 2025-11-16_
 
 ## Overview
 
-`database.ts` provides a lightweight abstraction for connecting to a relational database, executing queries, and safely handling user input.
+`database.ts` provides a lightweight abstraction for establishing a database connection, executing queries, and safely handling user input.
 
 - **`DatabaseConfig`** – Describes the connection parameters (host, port, database name, username, password).  
-- **`Database`** – A class that manages a single connection lifecycle and exposes `connect()`, `query()`, and `disconnect()` methods.  
-- **`createConnection`** – A convenience async factory that returns a **connected** `Database` instance.  
-- **`sanitizeInput`** – A helper that removes potentially dangerous characters (`'`, `"`, `;`) from strings before they are used in SQL statements.
-
-The module exports:
-
-| Export            | Type       | Description                                                                 |
-|-------------------|------------|-----------------------------------------------------------------------------|
-| `DatabaseConfig`  | **Interface** | Configuration object for a database connection. |
-| `Database`        | **Class**  | Encapsulates a database connection and exposes `connect`, `query`, and `disconnect` methods. |
-| `createConnection`| **Function**| Convenience factory that creates a `Database` instance and automatically connects it. |
-| `sanitizeInput`   | **Function**| Utility that removes potentially dangerous characters from a string. |
+- **`Database`** – A class that manages the lifecycle of a connection and exposes `connect()`, `query()`, and `disconnect()` methods.  
+- **`createConnection`** – A helper that creates a `Database` instance and automatically connects it.  
+- **`sanitizeInput`** – A small utility that removes potentially dangerous characters (`'`, `"`, `;`) from strings before they are used in SQL statements.
 
 > **Note**: The actual database driver logic is omitted; replace the bodies of `connect`, `query`, and `disconnect` with your preferred driver (e.g., `pg`, `mysql`, `sqlite3`).
 
 ---
 
-## 1. Exports
+## Exports
 
-| Export            | Type       | Description                                                                 |
-|-------------------|------------|-----------------------------------------------------------------------------|
-| `DatabaseConfig`  | `interface`| Defines the configuration needed to connect to a database.                 |
-| `Database`        | `class`    | Manages a database connection and provides `connect`, `query`, and `disconnect` methods. |
-| `createConnection`| `function`| Async factory that creates **and connects** a `Database` instance.          |
-| `sanitizeInput`   | `function`| Removes single quotes, double quotes, and semicolons from a string.        |
+| Export            | Type            | Description                                                                 |
+|-------------------|-----------------|-----------------------------------------------------------------------------|
+| `DatabaseConfig`  | **Interface**   | Configuration object for a database connection.                             |
+| `Database`        | **Class**       | Encapsulates a database connection and exposes `connect`, `query`, and `disconnect` methods. |
+| `createConnection`| **Function**    | Convenience factory that creates a `Database` instance and automatically connects it. |
+| `sanitizeInput`   | **Function**    | Utility that removes potentially dangerous characters (`'`, `"`, `;`) from a string. |
 
-### 1.1 `DatabaseConfig` (Interface)
+---
+
+## Detailed API
+
+### 1. `DatabaseConfig` (Interface)
 
 ```ts
 export interface DatabaseConfig {
@@ -63,71 +57,21 @@ export interface DatabaseConfig {
 }
 ```
 
-- **Purpose** – Describes the connection parameters required by the `Database` class.
+#### Parameters
 
-### 1.2 `Database` (Class)
+| Property   | Type     | Description                                 |
+|------------|----------|---------------------------------------------|
+| `host`     | `string` | Database host address (e.g., `"localhost"`). |
+| `port`     | `number` | Port number the database listens on.        |
+| `database` | `string` | Name of the database/schema.                |
+| `username` | `string` | Username for authentication.                |
+| `password` | `string` | Password for authentication.                |
 
-```ts
-export class Database {
-  private config: DatabaseConfig;
-
-  constructor(config: DatabaseConfig);
-  async connect(): Promise<void>;
-  async query(sql: string, params?: any[]): Promise<any[]>;
-  async disconnect(): Promise<void>;
-}
-```
-
-- **Constructor** – Instantiates a new `Database` object with the supplied configuration.  
-- **`connect()`** – Opens a connection to the database. Returns `Promise<void>`.  
-- **`query(sql, params?)`** – Executes a SQL statement.  
-  - `sql` – The SQL string to execute.  
-  - `params` – Optional array of parameters for prepared statements.  
-  Returns `Promise<any[]>` – an array of rows returned by the query.  
-- **`disconnect()`** – Closes the connection. Returns `Promise<void>`.
-
-### 1.3 `createConnection` (Function)
-
-```ts
-export async function createConnection(config: DatabaseConfig): Promise<Database> {
-  const db = new Database(config);
-  await db.connect();
-  return db;
-}
-```
-
-- **Purpose** – Convenience factory that creates a `Database` instance and automatically connects it.
-
-### 1.4 `sanitizeInput` (Function)
-
-```ts
-export function sanitizeInput(input: string): string {
-  return input.replace(/['";]/g, '');
-}
-```
-
-- **Purpose** – Removes single quotes, double quotes, and semicolons from a string to help prevent SQL injection.
-
----
-
-## 2. Usage Examples
-
-### 2.1 Importing
-
-```ts
-import {
-  Database,
-  DatabaseConfig,
-  createConnection,
-  sanitizeInput,
-} from './database';
-```
-
-### 2.2 Defining a Configuration
+#### Usage Example
 
 ```ts
 const config: DatabaseConfig = {
-  host: 'localhost',
+  host: '127.0.0.1',
   port: 5432,
   database: 'my_app',
   username: 'app_user',
@@ -135,45 +79,14 @@ const config: DatabaseConfig = {
 };
 ```
 
-### 2.3 Instantiating `Database` Manually
+### 2. `Database` (Class)
 
-```ts
-const db = new Database(config);
+*Documentation for the `Database` class can be added here.* *(Placeholder for future expansion.)*
 
-async function runManual() {
-  await db.connect(); // Open the connection
+### 3. `createConnection` (Function)
 
-  const rows = await db.query(
-    'SELECT * FROM users WHERE age > $1',
-    [30]
-  );
-  console.log(rows);
+*Documentation for the `createConnection` factory can be added here.* *(Placeholder for future expansion.)*
 
-  await db.disconnect(); // Close the connection
-}
+### 4. `sanitizeInput` (Function)
 
-runManual().catch(console.error);
-```
-
-### 2.4 Using the `createConnection` Factory
-
-```ts
-async function runFactory() {
-  const db = await createConnection(config); // Already connected
-
-  const products = await db.query(
-    'SELECT * FROM products WHERE price < $1',
-    [100]
-  );
-  console.log(products);
-
-  await db.disconnect(); // Close when done
-}
-
-runFactory().catch(console.error);
-```
-
---- 
-
-*End of documentation.*
-```
+*Documentation for the `sanitizeInput` utility can be added here.* *(Placeholder for future expansion.)*

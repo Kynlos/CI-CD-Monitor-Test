@@ -1,4 +1,3 @@
-```markdown
 ---
 title: Payment System
 layout: default
@@ -14,7 +13,7 @@ layout: default
 
 ## Overview  
 
-The **Payment Processor** module provides a lightweight abstraction for handling payment transactions and refunds. It supports three payment‑method types (`card`, `bank`, `paypal`) and exposes a simple API to:
+The **Payment Processor** module provides a lightweight, TypeScript‑based service for handling payment transactions and refunds. It supports three payment‑method types (`card`, `bank`, `paypal`) and exposes a simple API to:
 
 1. **Process a payment** – create a transaction, charge the payment method, and return the transaction status.  
 2. **Refund a transaction** – reverse a completed transaction and mark it as refunded.  
@@ -48,78 +47,41 @@ All operations are asynchronous and return plain JavaScript objects that can be 
 
 ---
 
-## Interfaces  
-
-### `PaymentMethod`
-
-```ts
-export interface PaymentMethod {
-  id: string;                         // Unique identifier for the method
-  type: 'card' | 'bank' | 'paypal';    // Method type
-  last4: string;                      // Last four digits of the card/account
-  expiryDate?: string;                // Optional expiry date (MM/YY)
-}
-```
-
-### `Transaction`
-
-```ts
-export interface Transaction {
-  id: string;                         // Unique transaction ID
-  amount: number;                     // Amount in cents
-  currency: string;                   // ISO currency code (currently hard‑coded to 'USD')
-  status: 'pending' |
-          'succeeded' |
-          'failed' |
-          'refunded';                // Current state of the transaction
-  createdAt: Date;                    // Timestamp when the transaction was created
-  // Additional fields can be added as needed (e.g., userId, paymentMethodId)
-}
-```
-
----
-
 ## Usage Examples  
 
-> **Prerequisites** – Install the module (or copy the file) and import the functions:
+> **Tip:** All functions return `Promise`s, so use `await` or `.then()`.
 
 ```ts
 import {
-  PaymentMethod,
-  Transaction,
   processPayment,
   refundTransaction,
   getUserTransactions,
+  PaymentMethod,
+  Transaction
 } from './payment-processor';
 
-// 1️⃣ Create a payment method representation
-const myCard: PaymentMethod = {
-  id: 'pm_001',
+// 1️⃣ Create a payment method (e.g., a card)
+const card: PaymentMethod = {
+  id: 'pm_12345',
   type: 'card',
   last4: '4242',
-  expiryDate: '12/27',
+  expiryDate: '12/2026'
 };
 
-// 2️⃣ Process a payment
+// 2️⃣ Process a payment of $49.99 (4999 cents)
 async function makePurchase() {
   try {
-    const tx: Transaction = await processPayment({
-      amount: 1999,          // $19.99 in cents
-      currency: 'USD',
-      paymentMethod: myCard,
-      userId: 'user_123',
-    });
-
-    console.log('Transaction result:', tx);
+    const tx: Transaction = await processPayment(4999, card);
+    console.log('Transaction:', tx);
   } catch (err) {
     console.error('Payment failed:', err);
   }
 }
 
 // 3️⃣ Refund a transaction
-async function refundPurchase(transactionId: string) {
+async function refund(txId: string) {
   try {
-    const refundedTx = await refundTransaction(transactionId);
+    const refundedTx = await refundTransaction(txId);
     console.log('Refunded transaction:', refundedTx);
   } catch (err) {
     console.error('Refund failed:', err);
@@ -131,21 +93,37 @@ async function showHistory(userId: string) {
   const history = await getUserTransactions(userId);
   console.log(`Transaction history for ${userId}:`, history);
 }
-
-// Example flow
-(async () => {
-  await makePurchase();
-  // Assume the transaction ID is known after the purchase
-  // await refundPurchase('tx_abc123');
-  await showHistory('user_123');
-})();
 ```
 
-The example demonstrates the full lifecycle:
+---
 
-1. Define a `PaymentMethod`.
-2. Call `processPayment` to create and charge a transaction.
-3. Optionally call `refundTransaction` with the transaction ID.
-4. Retrieve all of a user’s transactions via `getUserTransactions`.
+## Interfaces  
 
-> **Tip** – Because the current implementation stores data only in memory, the transaction history will be lost when the process exits. Swap the in‑memory helpers with persistent storage (e.g., a database) for real‑world usage.
+### `PaymentMethod`
+
+```ts
+export interface PaymentMethod {
+  id: string;                         // Unique identifier for the method
+  type: 'card' | 'bank' | 'paypal';   // Method type
+  last4: string;                      // Last four digits of the card/account
+  expiryDate?: string;                // Optional expiry date (MM/YY)
+}
+```
+
+### `Transaction`
+
+```ts
+export interface Transaction {
+  id: string;                         // Unique transaction identifier
+  amount: number;                     // Amount in the smallest currency unit (e.g., cents)
+  currency: string;                   // Currency code, e.g., 'USD'
+  status: 'pending' | 'succeeded' | 'failed' | 'refunded';
+  paymentMethod: PaymentMethod;       // The method used for this transaction
+  createdAt: Date;                    // Timestamp when the transaction was created
+  updatedAt?: Date;                   // Timestamp of the last status change (optional)
+}
+```
+
+--- 
+
+*This page is automatically generated from the source file `payment-processor.ts`. Any manual edits should be made in the source code and regenerated.*

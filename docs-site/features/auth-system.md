@@ -1,4 +1,3 @@
-```markdown
 ---
 title: Auth System
 layout: default
@@ -13,14 +12,14 @@ _Last updated: 2025-11-16_
 # `auth.ts` – Authentication Module
 
 ## Overview
-The **Authentication** module provides a simple, type‑safe API for user authentication, session handling, and token generation.  
+The **Authentication** module provides a minimal, type‑safe API for user authentication, session handling, and token generation.  
 It defines:
 
-* **Data contracts** (`User`, `LoginOptions`) for user information and login configuration.  
-* A **service class** (`AuthService`) that exposes asynchronous methods for logging in, logging out, and validating JWT tokens.  
-* Two helper functions (`hashPassword`, `generateToken`) that are placeholders for real cryptographic logic.
+- **Data contracts** (`User`, `LoginOptions`) for user information and login behaviour.  
+- A **service class** (`AuthService`) that encapsulates the core authentication logic.  
+- Two **utility functions** (`hashPassword`, `generateToken`) for password hashing and JWT creation.
 
-> **Note**: The current implementation contains placeholder logic (`return {} as User`, `return 'token'`). Replace these with real database lookups, password hashing, and JWT handling before using in production.
+> **⚠️ Note** – The current implementation contains placeholder logic (`return {} as User`, `return 'token'`, etc.). Replace these stubs with real database lookups, password hashing, and JWT handling before using in production.
 
 ---
 
@@ -28,11 +27,11 @@ It defines:
 
 | Export          | Type        | Description                                   |
 |-----------------|-------------|-----------------------------------------------|
-| `User`          | `interface` | Represents a user record.                    |
-| `LoginOptions`  | `interface` | Optional settings for the login flow.        |
-| `AuthService`   | `class`     | Service that handles authentication logic.   |
-| `hashPassword`  | `function`  | Hashes a plain‑text password (placeholder).  |
-| `generateToken` | `function`  | Generates a JWT token for a user (placeholder). |
+| `User`          | **Interface** | Represents a user record.                    |
+| `LoginOptions`  | **Interface** | Optional parameters for the login flow.      |
+| `AuthService`   | **Class**     | Provides methods to login, logout, and validate tokens. |
+| `hashPassword`  | **Function**  | Hashes a plain‑text password.                |
+| `generateToken` | **Function**  | Generates a JWT token for a user.            |
 
 ---
 
@@ -122,54 +121,35 @@ console.log('Generated token:', token);
 
 | Parameter | Type            | Description                     |
 |-----------|-----------------|---------------------------------|
-| `username`| `string`        | User’s login name.              |
-| `password`| `string`        | User’s plain‑text password.     |
-| `options` | `LoginOptions` (optional) | Login configuration (e.g., `rememberMe`, `timeout`). |
-
-**Returns**: `Promise<User>` – resolves to the authenticated user object.
-
----
+| `username`| `string`        | The user's login name.          |
+| `password`| `string`        | Plain‑text password.            |
+| `options?`| `LoginOptions`  | Optional login configuration.  |
+| **Returns**| `Promise<User>`| Resolves with the authenticated user record. |
 
 ### `AuthService.logout(userId)`
 
-| Parameter | Type     | Description               |
-|-----------|----------|---------------------------|
+| Parameter | Type     | Description                     |
+|-----------|----------|---------------------------------|
 | `userId`  | `string` | Identifier of the user to log out. |
-
-**Returns**: `Promise<void>` – resolves when the logout process completes.
-
----
+| **Returns**| `Promise<void>`| Resolves when logout is complete. |
 
 ### `AuthService.validateToken(token)`
 
 | Parameter | Type     | Description                     |
 |-----------|----------|---------------------------------|
-| `token`   | `string` | JWT‑style token issued to a user. |
+| `token`   | `string` | JWT token to validate.          |
+| **Returns**| `Promise<User \| null>`| Resolves with the user if the token is valid, otherwise `null`. |
 
-**Returns**: `Promise<User | null>` – resolves to the user associated with the token, or `null` if the token is invalid/expired.
-
----
-
-## Helper Functions
-
-### `hashPassword(plainText)`
+### `hashPassword(plain)`
 
 | Parameter | Type     | Description                     |
 |-----------|----------|---------------------------------|
-| `plainText`| `string`| The password to hash.           |
-
-**Returns**: `string` – a hashed representation (currently a placeholder).
-
----
+| `plain`   | `string` | Plain‑text password to hash.    |
+| **Returns**| `string`| Hashed password (placeholder implementation). |
 
 ### `generateToken(userId)`
 
 | Parameter | Type     | Description                     |
 |-----------|----------|---------------------------------|
-| `userId`  | `string` | Identifier of the user for whom the token is generated. |
-
-**Returns**: `string` – a JWT‑style token (currently a placeholder).
-
----
-
-> **Reminder**: Replace the placeholder implementations with production‑ready logic (e.g., `bcrypt` for hashing, `jsonwebtoken` for token creation/verification, and real persistence for users).
+| `userId`  | `string` | Identifier of the user for whom to generate a token. |
+| **Returns**| `string`| JWT token (placeholder implementation). |
