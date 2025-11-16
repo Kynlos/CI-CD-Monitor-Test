@@ -15,9 +15,10 @@ Module architecture and design documentation.
 - **[Email Service](email-service.md)** - Module architecture and design
 - **[Llm](llm.md)** - Module architecture and design
 - **[Notification System](notification-system.md)** - Module architecture and design
+- **[Pages Manager](pages-manager.md)** - Module architecture and design
 - **[Payment Processor](payment-processor.md)** - Module architecture and design
 
-**Total:** 6 modules
+**Total:** 7 modules
 
 ---
 

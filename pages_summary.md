@@ -1,40 +1,16 @@
 # GitHub Pages Update Summary
 
-**Changes Made:** 9
+**Changes Made:** 3
 
-### auth.ts -> api/authentication.md
-- **Action:** CREATE
-- **Reasoning:** Authentication api
-
-### auth.ts -> features/auth-system.md
-- **Action:** CREATE
-- **Reasoning:** Authentication feature
-
-### payment-processor.ts -> api/payments.md
-- **Action:** CREATE
-- **Reasoning:** Payment api
-
-### payment-processor.ts -> features/payment-system.md
-- **Action:** CREATE
-- **Reasoning:** Payment feature
-
-### email-service.ts -> api/email-service.md
+### pages-manager.ts -> api/pages-manager.md
 - **Action:** MODIFY
-- **Reasoning:** The documentation for `email-service.ts` already exists at api/email-service.md. The new auto‑generated content should replace/update the existing page rather than creating a duplicate.
+- **Reasoning:** A page for the Pages Manager already exists (api/pages-manager.md); the new source file updates the same functionality, so the existing documentation should be updated rather than creating a new page.
 
-### email-service.ts -> features/notification-system.md
+### pages-manager.ts -> features/pages-manager.md
 - **Action:** CREATE
-- **Reasoning:** Email/notifications feature
+- **Reasoning:** The pages-manager script introduces a distinct feature for managing GitHub Pages documentation, which is not covered by any existing feature pages, so a new documentation page is required.
 
-### email-service.ts -> modules/notification-system.md
+### pages-manager.ts -> modules/pages-manager.md
 - **Action:** CREATE
-- **Reasoning:** Email/notifications module
-
-### database.ts -> api/database.md
-- **Action:** CREATE
-- **Reasoning:** Database api
-
-### database.ts -> features/data-layer.md
-- **Action:** CREATE
-- **Reasoning:** Database feature
+- **Reasoning:** The `pages-manager.ts` module is not represented in the current documentation set; a dedicated page is needed to describe its architecture and functionality.
 

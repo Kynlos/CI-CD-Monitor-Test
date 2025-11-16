@@ -16,9 +16,10 @@ User-facing feature documentation and guides.
 - **[Email Service](email-service.md)** - Feature guide and tutorial
 - **[Llm](llm.md)** - Feature guide and tutorial
 - **[Notification System](notification-system.md)** - Feature guide and tutorial
+- **[Pages Manager](pages-manager.md)** - Feature guide and tutorial
 - **[Payment System](payment-system.md)** - Feature guide and tutorial
 
-**Total:** 7 features
+**Total:** 8 features
 
 ---
 
