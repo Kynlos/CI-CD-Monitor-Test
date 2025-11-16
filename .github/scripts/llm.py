@@ -65,18 +65,25 @@ class LLMClient:
         
         for attempt in range(max_retries):
             try:
+                # Build request payload
+                payload = {
+                    'model': model,
+                    'messages': messages,
+                    'temperature': temperature,
+                    'max_tokens': max_tokens
+                }
+                
+                # Add response_format if JSON is requested (CRITICAL for valid JSON)
+                if response_format == 'json':
+                    payload['response_format'] = {'type': 'json_object'}
+                
                 response = requests.post(
                     GROQ_API_URL,
                     headers={
                         'Authorization': f'Bearer {self.api_key}',
                         'Content-Type': 'application/json'
                     },
-                    json={
-                        'model': model,
-                        'messages': messages,
-                        'temperature': temperature,
-                        'max_tokens': max_tokens
-                    },
+                    json=payload,
                     timeout=timeout
                 )
                 
