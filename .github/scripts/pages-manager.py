@@ -410,6 +410,14 @@ Return the COMPLETE merged page content in markdown format.
         
         if merged:
             print(f"    ✓ LLM merged content successfully")
+            # Remove any code fences the LLM might have added
+            merged = merged.strip()
+            if merged.startswith('```markdown'):
+                merged = merged[11:]  # Remove ```markdown
+            if merged.startswith('```'):
+                merged = merged[3:]
+            if merged.endswith('```'):
+                merged = merged[:-3]
             return merged.strip()
         else:
             print(f"    ⚠️  LLM merge failed, appending instead")
