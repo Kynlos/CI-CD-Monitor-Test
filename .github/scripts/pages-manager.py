@@ -86,26 +86,108 @@ class PagesManager:
         
         return pages
     
-    def make_intelligent_decision(self, source_file: str, doc_content: str) -> Tuple[str, str, str]:
+    def generate_multi_perspective_docs(self, source_file: str, doc_content: str) -> List[Tuple[str, str, str]]:
+        """
+        Generate multiple documentation perspectives: API, Modules, Features
+        
+        Returns:
+            List of (page_path, action, reasoning) tuples
+        """
+        print(f"\n🔮 Generating multi-perspective docs for {source_file}...")
+        
+        perspectives = []
+        llm = get_client()
+        
+        # Analyze what documentation types to generate
+        analysis_prompt = f"""Analyze this code documentation and determine what types of documentation should be generated.
+
+**Source File:** {source_file}
+
+**Documentation Content:**
+```markdown
+{doc_content[:3000]}
+```
+
+**Documentation Types:**
+1. **API Reference** - Technical API docs (functions, classes, parameters, returns)
+2. **Module Architecture** - Design patterns, how components interact, architecture decisions
+3. **Feature Guide** - User-facing guides on how to use features, configuration, examples
+
+**Your Task:**
+Decide which documentation types are appropriate for this code. Return JSON array with perspectives to generate.
+
+**Output Format (JSON only):**
+{{
+  "perspectives": [
+    {{"type": "api|module|feature", "reason": "Why this perspective is needed"}},
+    ...
+  ]
+}}
+
+Be selective - only generate perspectives that add value. Most code needs API docs, fewer need module/feature docs.
+"""
+        
+        analysis_result = llm.call_chat(
+            model=MODEL,
+            messages=[
+                {'role': 'system', 'content': 'You are a documentation strategist. Return ONLY valid JSON.'},
+                {'role': 'user', 'content': analysis_prompt}
+            ],
+            temperature=0.2,
+            max_tokens=300,
+            response_format='json',
+            timeout=30,
+            use_cache=True
+        )
+        
+        if analysis_result:
+            try:
+                analysis = json.loads(analysis_result)
+                perspective_types = analysis.get('perspectives', [{'type': 'api'}])
+                print(f"  ✓ Generating {len(perspective_types)} perspectives")
+                
+                for perspective in perspective_types:
+                    ptype = perspective.get('type', 'api')
+                    decision = self.make_intelligent_decision(source_file, doc_content, ptype)
+                    perspectives.append(decision)
+                
+                return perspectives
+            except Exception as e:
+                print(f"  ⚠️  Analysis failed: {e}, using API only")
+                return [self.make_intelligent_decision(source_file, doc_content, 'api')]
+        else:
+            # Fallback to API only
+            return [self.make_intelligent_decision(source_file, doc_content, 'api')]
+    
+    def make_intelligent_decision(self, source_file: str, doc_content: str, perspective: str = 'api') -> Tuple[str, str, str]:
         """
         LLM makes agentic decision about documentation placement
+        
+        Args:
+            perspective: 'api', 'module', or 'feature'
         
         Returns:
             (page_path, action, reasoning)
             action: 'create', 'append', 'modify'
         """
-        print(f"\n🤔 Making intelligent decision for {source_file}...")
+        print(f"\n🤔 Making decision for {source_file} ({perspective} perspective)...")
         
         # Build context for LLM
+        prefix = {'api': 'api/', 'module': 'modules/', 'feature': 'features/'}[perspective]
+        relevant_pages = {k: v for k, v in self.existing_pages.items() if k.startswith(prefix)}
+        
         existing_pages_summary = "\n".join([
             f"  {path}: {content[:200]}..." 
-            for path, content in list(self.existing_pages.items())[:15]
-        ])
+            for path, content in list(relevant_pages.items())[:10]
+        ]) if relevant_pages else "  (No pages in this section yet)"
         
-        if not existing_pages_summary:
-            existing_pages_summary = "  (No pages exist yet)"
+        perspective_guidance = {
+            'api': 'Focus on technical API details, function signatures, parameters, returns, examples.',
+            'module': 'Focus on architecture, design patterns, how components interact, module boundaries.',
+            'feature': 'Focus on user guides, how to use features, configuration, real-world examples.'
+        }
         
-        prompt = f"""You are a professional documentation architect. Analyze this code documentation and decide the BEST way to integrate it into the documentation website.
+        prompt = f"""You are a professional documentation architect creating **{perspective.upper()}** documentation.
 
 **Source File:** {source_file}
 
@@ -114,39 +196,26 @@ class PagesManager:
 {doc_content[:2000]}
 ```
 
-**Existing Documentation Pages:**
+**Existing {perspective.upper()} Pages:**
 {existing_pages_summary}
 
-**Site Structure:**
-- index.md - Homepage
-- api/ - API Reference pages
-- guides/ - User guides and tutorials
-- changelog/ - Version history
+**Perspective Guidance:**
+{perspective_guidance[perspective]}
 
 **Your Task:**
-Decide ONE of these actions:
+Decide the BEST action for integrating this into {prefix} documentation:
 
-1. **CREATE** a new page
-   - When: This is a completely new topic/module
-   - Example: "api/payment-processing.md"
-
-2. **APPEND** to existing page
-   - When: Adding new functions/features to existing module
-   - Example: Append to "api/authentication.md"
-
-3. **MODIFY** existing page
-   - When: Updating documentation for changed functions
-   - Example: Update section in "api/authentication.md"
+1. **CREATE** - New page for a completely new topic
+2. **APPEND** - Add to existing related page
+3. **MODIFY** - Update existing content
 
 **Output Format (JSON only):**
 {{
   "action": "create|append|modify",
-  "page_path": "path/to/page.md",
+  "page_path": "{prefix}page-name.md",
   "reasoning": "Brief explanation",
   "section_title": "Section name (if append/modify)"
 }}
-
-Be smart about organization. Group related functionality together. Use clear, professional page names.
 """
 
         # Use LLM wrapper with proper JSON handling
@@ -169,34 +238,43 @@ Be smart about organization. Group related functionality together. Use clear, pr
                 decision = json.loads(result_text)
                 
                 action = decision.get('action', 'create')
-                page_path = decision.get('page_path', f"api/{Path(source_file).stem}.md")
+                page_path = decision.get('page_path', f"{prefix}{Path(source_file).stem}.md")
                 reasoning = decision.get('reasoning', 'Auto-generated')
                 
-                print(f"  ✓ LLM Decision: {action.upper()} → {page_path}")
+                # Ensure page_path starts with correct prefix
+                if not page_path.startswith(prefix):
+                    page_path = prefix + Path(page_path).name
+                
+                print(f"  ✓ Decision: {action.upper()} → {page_path}")
                 print(f"  📝 Reasoning: {reasoning}")
                 
                 return (page_path, action, reasoning)
             except Exception as e:
                 print(f"  ⚠️  JSON parse error: {e}, using fallback")
-                return self._fallback_decision(source_file)
+                return self._fallback_decision(source_file, perspective)
         else:
             print(f"  ⚠️  LLM failed, using fallback")
-            return self._fallback_decision(source_file)
+            return self._fallback_decision(source_file, perspective)
     
-    def _fallback_decision(self, source_file: str) -> Tuple[str, str, str]:
+    def _fallback_decision(self, source_file: str, perspective: str = 'api') -> Tuple[str, str, str]:
         """Fallback decision if LLM fails"""
         stem = Path(source_file).stem
+        prefix = {'api': 'api/', 'module': 'modules/', 'feature': 'features/'}[perspective]
         
         if 'auth' in source_file.lower():
-            return ('api/authentication.md', 'create', 'Authentication module')
+            name = 'authentication' if perspective == 'api' else 'auth-system'
+            return (f'{prefix}{name}.md', 'create', f'Authentication {perspective}')
         elif 'database' in source_file.lower():
-            return ('api/database.md', 'create', 'Database module')
+            name = 'database' if perspective == 'api' else 'data-layer'
+            return (f'{prefix}{name}.md', 'create', f'Database {perspective}')
         elif 'payment' in source_file.lower():
-            return ('api/payments.md', 'create', 'Payment processing')
+            name = 'payments' if perspective == 'api' else 'payment-system'
+            return (f'{prefix}{name}.md', 'create', f'Payment {perspective}')
         elif 'email' in source_file.lower():
-            return ('api/notifications.md', 'create', 'Email/notifications')
+            name = 'notifications' if perspective == 'api' else 'notification-system'
+            return (f'{prefix}{name}.md', 'create', f'Email/notifications {perspective}')
         else:
-            return (f'api/{stem}.md', 'create', f'{stem} module')
+            return (f'{prefix}{stem}.md', 'create', f'{stem} {perspective}')
     
     def apply_documentation_change(self, page_path: str, action: str, 
                                   doc_content: str, section_title: str = None) -> bool:
@@ -347,7 +425,9 @@ Return the COMPLETE merged page content in markdown format.
             if md_file.name == 'index.md':
                 continue
             relative = md_file.relative_to(PAGES_DIR)
-            all_pages[str(relative)] = md_file
+            # Normalize path to forward slashes for cross-platform consistency
+            relative_str = str(relative).replace('\\', '/')
+            all_pages[relative_str] = md_file
         
         # Generate API index
         api_pages = [p for p in all_pages.keys() if p.startswith('api/')]
@@ -477,7 +557,7 @@ This documentation is automatically generated and maintained by our intelligent 
 
 
 def process_docs_to_pages(doc_files: List[str]):
-    """Process documentation files to GitHub Pages"""
+    """Process documentation files to GitHub Pages with multi-perspective generation"""
     print("="*80)
     print("INTELLIGENT GITHUB PAGES MANAGER")
     print("="*80)
@@ -499,31 +579,40 @@ def process_docs_to_pages(doc_files: List[str]):
         doc_path = Path(doc_file)
         source_file = doc_path.stem + '.ts'
         
-        # Make intelligent decision
-        page_path, action, reasoning = manager.make_intelligent_decision(source_file, content)
+        # Generate multi-perspective docs (API, Modules, Features)
+        perspectives = manager.generate_multi_perspective_docs(source_file, content)
         
-        # Apply change
-        success = manager.apply_documentation_change(page_path, action, content)
-        
-        if success:
-            changes_made.append({
-                'source': source_file,
-                'page': page_path,
-                'action': action,
-                'reasoning': reasoning
-            })
+        # Apply each perspective
+        for page_path, action, reasoning in perspectives:
+            success = manager.apply_documentation_change(page_path, action, content)
             
-            # Record mapping
-            manager.mapping['file_to_page'][source_file] = page_path
-            if page_path not in manager.mapping['page_metadata']:
-                manager.mapping['page_metadata'][page_path] = {
-                    'created': datetime.now().isoformat(),
-                    'sources': []
-                }
-            if source_file not in manager.mapping['page_metadata'][page_path]['sources']:
-                manager.mapping['page_metadata'][page_path]['sources'].append(source_file)
-            manager.mapping['page_metadata'][page_path]['last_updated'] = datetime.now().isoformat()
-            manager.mapping['page_metadata'][page_path]['last_action'] = action
+            if success:
+                changes_made.append({
+                    'source': source_file,
+                    'page': page_path,
+                    'action': action,
+                    'reasoning': reasoning
+                })
+                
+                # Record mapping (support multiple pages per file)
+                if source_file not in manager.mapping['file_to_page']:
+                    manager.mapping['file_to_page'][source_file] = [page_path]
+                elif isinstance(manager.mapping['file_to_page'][source_file], str):
+                    # Migrate old string format to list
+                    old_page = manager.mapping['file_to_page'][source_file]
+                    manager.mapping['file_to_page'][source_file] = [old_page, page_path]
+                elif page_path not in manager.mapping['file_to_page'][source_file]:
+                    manager.mapping['file_to_page'][source_file].append(page_path)
+                
+                if page_path not in manager.mapping['page_metadata']:
+                    manager.mapping['page_metadata'][page_path] = {
+                        'created': datetime.now().isoformat(),
+                        'sources': []
+                    }
+                if source_file not in manager.mapping['page_metadata'][page_path]['sources']:
+                    manager.mapping['page_metadata'][page_path]['sources'].append(source_file)
+                manager.mapping['page_metadata'][page_path]['last_updated'] = datetime.now().isoformat()
+                manager.mapping['page_metadata'][page_path]['last_action'] = action
     
     # Generate index page
     manager.generate_index_page()
@@ -539,11 +628,11 @@ def process_docs_to_pages(doc_files: List[str]):
 """
     
     for change in changes_made:
-        summary += f"### {change['source']} → {change['page']}\n"
+        summary += f"### {change['source']} -> {change['page']}\n"
         summary += f"- **Action:** {change['action'].upper()}\n"
         summary += f"- **Reasoning:** {change['reasoning']}\n\n"
     
-    with open('pages_summary.md', 'w') as f:
+    with open('pages_summary.md', 'w', encoding='utf-8') as f:
         f.write(summary)
     
     print("\n" + "="*80)
