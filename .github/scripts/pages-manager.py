@@ -390,7 +390,8 @@ layout: default
 5. Keep consistent formatting and structure
 6. Update "Last updated" timestamps
 
-Return the COMPLETE merged page content in markdown format.
+**CRITICAL:** Return ONLY the raw markdown content. Do NOT wrap it in code fences or ```markdown blocks.
+Return the COMPLETE merged page content as plain markdown.
 """
 
         # Use LLM wrapper
