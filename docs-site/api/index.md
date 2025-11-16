@@ -15,11 +15,12 @@ Low-level API documentation for all functions, classes, and interfaces.
 - **[Email Service](email-service.md)** - Technical API documentation
 - **[Llm](llm.md)** - Technical API documentation
 - **[Notifications](notifications.md)** - Technical API documentation
+- **[Pages Manager Ts](pages-manager-ts.md)** - Technical API documentation
 - **[Pages Manager](pages-manager.md)** - Technical API documentation
 - **[Payment Processor](payment-processor.md)** - Technical API documentation
 - **[Payments](payments.md)** - Technical API documentation
 
-**Total:** 8 API pages
+**Total:** 9 API pages
 
 ---
 

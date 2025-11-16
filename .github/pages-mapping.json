@@ -1,12 +1,13 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-16T00:30:46.253990",
+  "last_updated": "2025-11-16T00:35:58.651261",
   "file_to_page": {
     "pages-manager.ts": [
       "api/pages-manager.md",
       "api/pages-manager.md",
       "features/pages-manager.md",
-      "modules/pages-manager.md"
+      "modules/pages-manager.md",
+      "api/pages-manager-ts.md"
     ],
     "wiki-manager.ts": "guides/wiki-manager.md",
     "auth.ts": [
@@ -227,16 +228,24 @@
       "sources": [
         "pages-manager.ts"
       ],
-      "last_updated": "2025-11-16T00:21:39.249458",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:35:52.869668",
+      "last_action": "modify"
     },
     "modules/pages-manager.md": {
       "created": "2025-11-16T00:21:39.249552",
       "sources": [
         "pages-manager.ts"
       ],
-      "last_updated": "2025-11-16T00:22:29.972300",
+      "last_updated": "2025-11-16T00:35:58.650081",
       "last_action": "modify"
+    },
+    "api/pages-manager-ts.md": {
+      "created": "2025-11-16T00:35:50.556421",
+      "sources": [
+        "pages-manager.ts"
+      ],
+      "last_updated": "2025-11-16T00:35:50.556430",
+      "last_action": "create"
     }
   },
   "site_structure": {
