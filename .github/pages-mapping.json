@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-16T00:11:12.614911",
+  "last_updated": "2025-11-16T00:13:00.843160",
   "file_to_page": {
     "pages-manager.ts": [
       "api/pages-manager.md",
@@ -27,7 +27,9 @@
     ],
     "llm.ts": [
       "api/llm.md",
-      "api/llm.md"
+      "api/llm.md",
+      "features/llm.md",
+      "modules/llm.md"
     ]
   },
   "page_metadata": {
@@ -100,7 +102,7 @@
       "sources": [
         "llm.ts"
       ],
-      "last_updated": "2025-11-16T00:10:37.719755",
+      "last_updated": "2025-11-16T00:13:00.842152",
       "last_action": "create"
     },
     "features/payment-system.md": {
@@ -117,6 +119,22 @@
         "database.ts"
       ],
       "last_updated": "2025-11-16T00:11:12.614344",
+      "last_action": "create"
+    },
+    "features/llm.md": {
+      "created": "2025-11-16T00:13:00.842263",
+      "sources": [
+        "llm.ts"
+      ],
+      "last_updated": "2025-11-16T00:13:00.842268",
+      "last_action": "create"
+    },
+    "modules/llm.md": {
+      "created": "2025-11-16T00:13:00.842361",
+      "sources": [
+        "llm.ts"
+      ],
+      "last_updated": "2025-11-16T00:13:00.842365",
       "last_action": "create"
     }
   },

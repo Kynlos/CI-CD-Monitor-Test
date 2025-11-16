@@ -11,9 +11,10 @@ User-facing feature documentation and guides.
 ## Available Features
 
 - **[Data Layer](data-layer.md)** - Feature guide and tutorial
+- **[Llm](llm.md)** - Feature guide and tutorial
 - **[Payment System](payment-system.md)** - Feature guide and tutorial
 
-**Total:** 2 features
+**Total:** 3 features
 
 ---
 

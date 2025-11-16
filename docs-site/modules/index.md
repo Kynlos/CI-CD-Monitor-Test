@@ -10,9 +10,9 @@ Module architecture and design documentation.
 
 ## Available Modules
 
-*No module documentation yet. Module-level docs will be auto-generated as the codebase evolves.*
+- **[Llm](llm.md)** - Module architecture and design
 
-Modules provide architectural overview, design decisions, and how different components interact.
+**Total:** 1 modules
 
 ---
 
