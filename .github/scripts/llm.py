@@ -115,7 +115,12 @@ class LLMClient:
                         print(f"  ❌ Failed after {max_retries} retries: {response.status_code}")
                         return None
                 else:
-                    print(f"  ❌ API error: {response.status_code}")
+                    # Print error details for debugging
+                    try:
+                        error_detail = response.json()
+                        print(f"  ❌ API error {response.status_code}: {error_detail}")
+                    except:
+                        print(f"  ❌ API error: {response.status_code} - {response.text[:200]}")
                     return None
             
             except requests.Timeout:
