@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-16T00:21:39.250666",
+  "last_updated": "2025-11-16T00:22:29.973264",
   "file_to_page": {
     "pages-manager.ts": [
       "api/pages-manager.md",
@@ -50,7 +50,7 @@
       "sources": [
         "pages-manager.ts"
       ],
-      "last_updated": "2025-11-16T00:21:39.249299",
+      "last_updated": "2025-11-16T00:22:28.170998",
       "last_action": "modify"
     },
     "guides/wiki-manager.md": {
@@ -234,8 +234,8 @@
       "sources": [
         "pages-manager.ts"
       ],
-      "last_updated": "2025-11-16T00:21:39.249556",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:22:29.972300",
+      "last_action": "modify"
     }
   },
   "site_structure": {
