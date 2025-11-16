@@ -145,7 +145,8 @@ jobs:
             BRANCH="${GITHUB_REF_NAME:-main}"
             
             # Commit first so the index is clean
-            git commit -m "docs: Regenerate all documentation [skip ci]"
+            # NOTE: Do NOT use [skip ci] - we need deploy-pages.yml to run!
+            git commit -m "docs: Regenerate all documentation"
             
             # Rebase onto latest remote and push with retries to handle concurrent pushes
             git fetch origin "$BRANCH"
