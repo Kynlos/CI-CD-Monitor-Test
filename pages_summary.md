@@ -2,7 +2,7 @@
 
 **Changes Made:** 1
 
-### pages-manager.ts -> api/pages-manager.md
+### llm.ts -> api/llm.md
 - **Action:** CREATE
-- **Reasoning:** pages-manager api
+- **Reasoning:** llm api
 
