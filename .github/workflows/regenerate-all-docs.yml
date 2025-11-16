@@ -150,16 +150,21 @@ jobs:
             # Rebase onto latest remote and push with retries to handle concurrent pushes
             git fetch origin "$BRANCH"
             
-            for i in 1 2 3; do
-              if git pull --rebase --autostash origin "$BRANCH"; then
-                if git push origin "HEAD:$BRANCH"; then
-                  echo "✅ Documentation committed"
-                  break
-                fi
+            # For doc generation, latest docs should always win
+            # Use force-with-lease to protect against unexpected changes
+            if git push --force-with-lease origin "HEAD:$BRANCH"; then
+              echo "✅ Documentation committed"
+            else
+              echo "⚠️ Force push failed, trying rebase..."
+              git rebase --abort 2>/dev/null || true
+              
+              if git pull --rebase --strategy-option=theirs origin "$BRANCH"; then
+                git push origin "HEAD:$BRANCH" && echo "✅ Documentation committed after rebase"
+              else
+                echo "❌ Failed to push documentation"
+                exit 1
               fi
-              echo "⚠️ Push failed (attempt $i). Rebasing and retrying..."
-              sleep $((i*2))
-            done
+            fi
           else
             echo "ℹ️  No changes to commit"
           fi
