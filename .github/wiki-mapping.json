@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-16T00:13:22.202216",
+  "last_updated": "2025-11-16T00:17:18.380470",
   "description": "Persistent mapping of source files to Wiki pages. DO NOT DELETE - used by wiki-manager.py to ensure consistency.",
   "file_to_page": {
     "email-service.ts": "Email-Service",
@@ -101,7 +101,7 @@
       "files": [
         "llm.ts"
       ],
-      "last_updated": "2025-11-16T00:12:58.271674"
+      "last_updated": "2025-11-16T00:17:18.380464"
     }
   }
 }

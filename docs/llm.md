@@ -2,33 +2,28 @@
 
 *Auto-generated from `.github/scripts/llm.py`*
 
-# llm.py – LLM Client Library
+# llm.py – Centralized LLM Client
 
-> **Centralized LLM client with retries, caching, and JSON coercion**  
-> This module provides a single, reusable client for calling the Groq (OpenAI‑compatible) API.  
-> It handles:
-> * Automatic retries with exponential back‑off
-> * Local caching of responses (optional)
-> * Robust JSON extraction / sanitisation
-> * Code‑fence stripping
-> * Simple singleton access
-
-> **Why this module?**  
-> Many of the repository’s scripts need to call an LLM. Instead of duplicating retry logic, cache handling, and JSON parsing in each script, this module centralises that logic in one place.
+> **TL;DR**  
+> A lightweight, retry‑enabled wrapper around the Groq/OpenAI chat API.  
+> It automatically caches responses, coerces LLM output to valid JSON, and exposes a simple singleton API for use across your repository.
 
 ---
 
 ## 1. Overview
 
-`llm.py` exposes a lightweight wrapper around the Groq API.  
-The wrapper is designed for:
+`llm.py` implements a **single, reusable LLM client** that:
 
-| Feature | Description |
-|---------|-------------|
-| **Retries** | 3 attempts with exponential back‑off (1 s, 2 s, 4 s). Retries on 429, 5xx, and timeouts. |
-| **Caching** | Responses are cached to `./.llm-cache/<hash>.txt`. Cache key is derived from the request payload. |
-| **JSON Coercion** | If `response_format='json'`, the client attempts to parse the response as JSON, stripping code fences, extracting balanced JSON, and sanitising common LLM output errors (smart quotes, trailing commas, multiline strings). |
-| **Singleton** | `get_client()` returns a shared `LLMClient` instance, so you don’t need to instantiate it yourself. |
+| Feature | What it does |
+|---------|--------------|
+| **Retries** | Automatic exponential back‑off on rate‑limit (`429`) or server errors (`5xx`). |
+| **Caching** | Stores successful responses in `.llm-cache/` keyed by a hash of the request. |
+| **JSON coercion** | Attempts to parse, extract, and sanitize LLM output into a valid JSON string. |
+| **Singleton** | `get_client()` returns a shared `LLMClient` instance, so you never need to instantiate it yourself. |
+| **Convenience helpers** | `clear_cache()` removes cached files, optionally by pattern. |
+
+> **Why Groq?**  
+> The module is configured to hit `https://api.groq.com/openai/v1/chat/completions`, but you can swap the URL or key by setting `GROQ_API_KEY` / `GROQ_API_URL` environment variables.
 
 ---
 
@@ -36,11 +31,9 @@ The wrapper is designed for:
 
 | Export | Type | Description |
 |--------|------|-------------|
-| `LLMClient` | Class | Main client for interacting with the LLM. |
+| `LLMClient` | Class | Main client with retry, cache, and JSON handling. |
 | `get_client` | Function | Returns a singleton `LLMClient` instance. |
-| `GROQ_API_KEY` | Constant | Environment variable key used to fetch the API key. |
-| `GROQ_API_URL` | Constant | Default endpoint for Groq chat completions. |
-| `CACHE_DIR` | Constant | Path to the local cache directory (`./.llm-cache`). |
+| `CACHE_DIR` | `Path` | Default cache directory (`.llm-cache`). |
 
 ---
 
@@ -48,11 +41,10 @@ The wrapper is designed for:
 
 > **Prerequisites**  
 > ```bash
-> export GROQ_API_KEY="sk-xxxx"
-> pip install requests
+> export GROQ_API_KEY="sk-…"
 > ```
 
-### 3.1 Basic Text Completion
+### 3.1 Basic Chat Call
 
 ```python
 from .llm import get_client
@@ -61,156 +53,191 @@ client = get_client()
 
 response = client.call_chat(
     model="gpt-4o-mini",
-    messages=[{"role": "user", "content": "Hello, world!"}],
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "What is the capital of France?"}
+    ],
     temperature=0.2,
-    max_tokens=50,
+    max_tokens=100,
+    response_format="text"  # or "json"
 )
 
-print(response)  # e.g. "Hello, world!"
+print(response)  # "Paris"
 ```
 
-### 3.2 JSON‑Formatted Response
+### 3.2 Requesting JSON Output
 
 ```python
-from .llm import get_client
-
-client = get_client()
-
-json_resp = client.call_chat(
+response_json = client.call_chat(
     model="gpt-4o-mini",
-    messages=[{"role": "user", "content": "Return a JSON object with a greeting."}],
-    response_format="json",
+    messages=[{"role": "user", "content": "Return a JSON object with name and age."}],
+    response_format="json"
 )
 
-print(json_resp)  # e.g. '{"greeting": "Hello, world!"}'
+# `response_json` is a *string* that contains valid JSON
+import json
+data = json.loads(response_json)
+print(data)  # {'name': 'Alice', 'age': 30}
 ```
 
-### 3.3 Using Cache
+### 3.3 Using the Cache
 
 ```python
-from .llm import get_client
+# First call – will hit the API
+client.call_chat(...)
 
-client = get_client()
-
-# First call writes to cache
-client.call_chat(
-    model="gpt-4o-mini",
-    messages=[{"role": "user", "content": "What is 2+2?"}],
-    use_cache=True,
-)
-
-# Subsequent call retrieves from cache
-cached = client.call_chat(
-    model="gpt-4o-mini",
-    messages=[{"role": "user", "content": "What is 2+2?"}],
-    use_cache=True,
-)
-print(cached)  # "4"
+# Second call – will read from cache
+client.call_chat(...)
 ```
 
 ### 3.4 Clearing the Cache
 
 ```python
-from .llm import get_client
+# Delete all cached responses
+client.clear_cache()
 
-client = get_client()
-client.clear_cache()          # Delete all cache files
-client.clear_cache("2+2")     # Delete cache files containing "2+2" in the filename
+# Delete only those that contain "weather" in the filename
+client.clear_cache(pattern="weather")
 ```
+
+### 3.5 Accessing Internal Helpers (for debugging)
+
+```python
+raw = client._coerce_to_json('{"foo": "bar",')
+print(raw)  # prints a sanitized JSON string or the original snippet
+```
+
+> **Tip** – All helper methods are prefixed with an underscore; they are meant for internal use but are exposed for advanced debugging.
 
 ---
 
-## 4. API Reference
+## 4. Parameters & Return Values
 
-### 4.1 `LLMClient`
-
-#### `__init__(self, api_key: str = None)`
+### 4.1 `LLMClient.__init__(api_key: Optional[str] = None)`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `api_key` | `str` | Groq API key. If omitted, the client reads `GROQ_API_KEY` from the environment. |
+| `api_key` | `str | None` | Groq API key. If omitted, the module reads `GROQ_API_KEY` from the environment. |
 
-#### `call_chat(self, *, model: str, messages: List[Dict], temperature: float = 0.3, max_tokens: int = 2000, response_format: str = 'text', timeout: int = 30, use_cache: bool = True) -> Optional[str]`
+> **Return** – `None` (initializes the instance).
+
+---
+
+### 4.2 `LLMClient.call_chat(...)`
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `model` | `str` | Model name (e.g., `"gpt-4o-mini"`). |
-| `messages` | `List[Dict]` | Chat history. Each dict must have `"role"` and `"content"`. |
-| `temperature` | `float` | Sampling temperature. |
-| `max_tokens` | `int` | Maximum tokens to generate. |
-| `response_format` | `'text'` or `'json'` | If `'json'`, the method will attempt to coerce the response into valid JSON. |
-| `timeout` | `int` | Request timeout in seconds. |
-| `use_cache` | `bool` | Whether to read/write from the local cache. |
+| `messages` | `List[Dict]` | Chat history, each dict containing `"role"` and `"content"`. |
+| `temperature` | `float` | Creativity level (default `0.3`). |
+| `max_tokens` | `int` | Max tokens to generate (default `2000`). |
+| `response_format` | `str` | `"text"` (default) or `"json"` – forces the API to return a JSON object. |
+| `timeout` | `int` | HTTP timeout in seconds (default `30`). |
+| `use_cache` | `bool` | If `True`, read/write cache (default `True`). |
 
-**Return Value**  
-`Optional[str]` – The raw or JSON‑coerced response text. Returns `None` on failure.
-
-**Behaviour**  
-1. **Cache lookup** – If `use_cache` is `True`, a SHA‑256 hash of the request is computed. If a cached file exists, its contents are returned immediately.  
-2. **HTTP request** – Sends a POST to `GROQ_API_URL` with the supplied payload.  
-3. **Retries** – Up to 3 attempts with exponential back‑off on 429, 5xx, or timeouts.  
-4. **JSON coercion** – If `response_format='json'`, the response is processed by `_coerce_to_json`.  
-5. **Cache write** – Successful responses are written to the cache file.
-
-#### `_strip_code_fences(self, text: str) -> str`
-
-Removes triple‑backtick fences (` ``` `) optionally followed by `json`.
-
-#### `_extract_balanced_json(self, text: str) -> Optional[str]`
-
-Finds the first balanced JSON object or array in `text`. Returns the snippet or `None`.
-
-#### `_sanitize_json_like(self, s: str) -> str`
-
-* Normalises smart quotes (`“ ” ’`) to ASCII (`" '`).  
-* Removes zero‑width spaces.  
-* Escapes newlines that appear inside quoted strings (common LLM bug).  
-* Removes trailing commas before `}` or `]`.
-
-#### `_coerce_to_json(self, text: str) -> str`
-
-Attempts to produce a valid JSON string from LLM output:
-
-1. Strip code fences.  
-2. Try `json.loads` directly.  
-3. Extract balanced JSON.  
-4. Sanitize and try again.  
-5. If all fail, returns the original snippet and prints a warning.
-
-#### `_fix_json_errors(self, text: str) -> str`
-
-Legacy helper (unused by `call_chat`) that attempts to close unterminated strings and remove stray commas.
-
-#### `clear_cache(self, pattern: str = None)`
-
-Deletes cached files.  
-* If `pattern` is `None`, deletes all `.txt` files in `CACHE_DIR`.  
-* Otherwise, deletes files whose names contain `pattern`.
+> **Return** – `Optional[str]`  
+> * `str` – The LLM response (plain text or JSON string).  
+> * `None` – On failure after all retries.
 
 ---
 
-### 4.2 `get_client() -> LLMClient`
+### 4.3 `LLMClient._strip_code_fences(text: str) -> str`
 
-Returns a singleton `LLMClient`. Subsequent calls return the same instance.
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | `str` | Raw LLM output. |
 
----
-
-## 5. Constants
-
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `GROQ_API_KEY` | `os.environ.get('GROQ_API_KEY')` | Environment variable name for the API key. |
-| `GROQ_API_URL` | `'https://api.groq.com/openai/v1/chat/completions'` | Default endpoint. |
-| `CACHE_DIR` | `Path('.llm-cache')` | Directory where cached responses are stored. |
+> **Return** – `str` – Input with any surrounding triple‑backtick fences removed.
 
 ---
 
-## 6. Notes & Best Practices
+### 4.4 `LLMClient._extract_balanced_json(text: str) -> Optional[str]`
 
-| Topic | Recommendation |
-|-------|----------------|
-| **API Key** | Store in `GROQ_API_KEY` env var or pass explicitly to `LLMClient`. |
-| **Cache Size** | Cached files are plain text; clean up with `clear_cache()` if disk space becomes an issue. |
-| **JSON Coercion** | The `response_format='json'` flag is optional. If you trust the model’s output, you can skip coercion for speed. |
-| **Error Handling** | `call_chat` prints warnings to stdout. In production, redirect logs or raise custom exceptions. |
-| **Rate Limits** | The retry logic
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | `str` | Raw LLM output. |
+
+> **Return** – `Optional[str]` – The first balanced `{…}` or `[…]` block, or `None` if none found.
+
+---
+
+### 4.5 `LLMClient._sanitize_json_like(s: str) -> str`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `s` | `str` | JSON‑like string that may contain smart quotes, zero‑width spaces, or trailing commas. |
+
+> **Return** – `str` – Normalized string ready for `json.loads()`.
+
+---
+
+### 4.6 `LLMClient._coerce_to_json(text: str) -> str`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | `str` | Raw LLM output. |
+
+> **Return** – `str` – A *valid* JSON string if coercion succeeded; otherwise the best‑attempt snippet.
+
+---
+
+### 4.7 `LLMClient._fix_json_errors(text: str) -> str`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | `str` | Raw LLM output. |
+
+> **Return** – `str` – A repaired JSON string (used internally by `_coerce_to_json`).
+
+---
+
+### 4.8 `LLMClient.clear_cache(pattern: Optional[str] = None) -> None`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pattern` | `str | None` | If provided, only delete cache files whose names contain this substring. |
+
+> **Return** – `None`.  
+> Side‑effect: removes files from `.llm-cache/`.
+
+---
+
+### 4.9 `get_client() -> LLMClient`
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| None | | |
+
+> **Return** – `LLMClient` – The singleton instance.  
+> Subsequent calls return the same object.
+
+---
+
+## 5. Design Notes
+
+| Feature | Implementation Detail |
+|---------|-----------------------|
+| **Cache key** | SHA‑256 of `model:messages:temperature:max_tokens` (first 16 hex chars). |
+| **Retry policy** | 3 attempts, exponential back‑off (`1, 2, 4` seconds). |
+| **JSON coercion** | 1️⃣ Try raw JSON 2️⃣ Extract balanced block 3️⃣ Sanitize (smart quotes, trailing commas, unterminated strings). |
+| **Error handling** | Prints human‑readable messages to `stdout`; returns `None` on unrecoverable errors. |
+| **Thread safety** | Not explicitly thread‑safe; use a single instance per process. |
+
+---
+
+## 6. Quick Reference
+
+```python
+from .llm import get_client
+
+client = get_client()
+
+# 1. Simple text response
+text = client.call_chat(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+# 2. JSON response
+json_str = client.call_chat(
+    model="gpt-4
