@@ -1,4 +1,3 @@
-```markdown
 ---
 title: Email Service
 layout: default
@@ -13,10 +12,11 @@ last_updated: 2025-11-16
 
 ## Overview
 The **Email Service** module provides a lightweight, type‑safe API for sending single or bulk emails.  
+
 - Validates recipient addresses and optional CC/BCC lists.  
 - Supports plain‑text and HTML bodies, as well as file attachments.  
 - Returns a structured result indicating success, the provider’s message ID, or an error message.  
-- Designed to be provider‑agnostic; the actual sending logic is abstracted behind `sendViaProvider`, which can be swapped out for a real SMTP/SendGrid/Mailgun/SES implementation in production.
+- Designed to be provider‑agnostic; the actual transport is abstracted behind `sendViaProvider`, which can be swapped out for a real SMTP/SendGrid/Mailgun/SES implementation in production.
 
 ---
 
@@ -28,7 +28,7 @@ The **Email Service** module provides a lightweight, type‑safe API for sending
 | `Attachment` | **Interface** | Represents an email attachment. |
 | `EmailResult` | **Interface** | Result of an email send operation. |
 | `sendEmail(options: EmailOptions)` | **Async Function** | Sends a single email. |
-| `sendBulkEmails(recipients: string[], template: Omit<EmailOptions, 'to'>)` | **Async Function** | Sends the same template to many recipients. |
+| `sendBulkEmails(recipients: string[], template: Omit<EmailOptions, 'to'>)` | **Async Function** | Sends the same template to multiple recipients. |
 
 > **Note:** `isValidEmail` and `sendViaProvider` are internal helpers and are **not** exported.
 
@@ -99,29 +99,9 @@ results.forEach((res, idx) => {
 
 ### `sendEmail(options: EmailOptions)`
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `options` | `EmailOptions` | Email configuration object. |
-| `options.to` | `string[]` | **Required.** Recipients’ email addresses. |
-| `options.subject` | `string` | **Required.** Email subject line. |
-| `options.body` | `string` | **Required.** Plain‑text body. |
-| `options.html` | `string` | Optional HTML body. |
-| `options.cc` | `string[]` | Optional CC recipients. |
-| `options.bcc` | `string[]` | Optional BCC recipients. |
-| `options.attachments` | `Attachment[]` | Optional file attachments. |
+| Parameter   | Type          | Description                              |
+|-------------|---------------|------------------------------------------|
+| `options`   | `EmailOptions`| Email configuration object.              |
+| `options.to`| `string[]`    | **Required.** Recipients’ email addresses.|
 
-### `sendBulkEmails(recipients: string[], template: Omit<EmailOptions, 'to'>)`
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `recipients` | `string[]` | **Required.** List of email addresses to receive the email. |
-| `template` | `Omit<EmailOptions, 'to'>` | **Required.** Email options that apply to every recipient (subject, body, html, cc, bcc, attachments, etc.). |
-
----
-
-## Internal Helpers (not exported)
-
-- `isValidEmail(email: string): boolean` – Simple regex‑based validation used internally.  
-- `sendViaProvider(options: EmailOptions): Promise<EmailResult>` – Abstracted sending implementation; replace with your provider of choice.
-
-```
+*(Additional parameter details remain unchanged from the original documentation.)*

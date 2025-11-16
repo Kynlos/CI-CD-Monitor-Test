@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2025-11-16T00:22:29.973264",
+  "last_updated": "2025-11-16T00:28:01.988960",
   "file_to_page": {
     "pages-manager.ts": [
       "api/pages-manager.md",
@@ -20,7 +20,8 @@
       "api/payments.md",
       "api/payments.md",
       "features/payment-system.md",
-      "modules/payment-processor.md"
+      "modules/payment-processor.md",
+      "api/payment-processor.md"
     ],
     "email-service.ts": [
       "api/notifications.md",
@@ -66,23 +67,23 @@
       "sources": [
         "auth.ts"
       ],
-      "last_updated": "2025-11-16T00:19:57.556133",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:27:29.610180",
+      "last_action": "modify"
     },
     "api/payment-processor.md": {
       "created": "2025-11-15T23:21:08.458910",
       "sources": [
         "payment-processor.ts"
       ],
-      "last_updated": "2025-11-15T23:21:08.458918",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:27:39.830291",
+      "last_action": "modify"
     },
     "api/email-service.md": {
       "created": "2025-11-15T23:21:09.010926",
       "sources": [
         "email-service.ts"
       ],
-      "last_updated": "2025-11-16T00:20:05.538232",
+      "last_updated": "2025-11-16T00:27:51.121434",
       "last_action": "modify"
     },
     "api/database.md": {
@@ -90,8 +91,8 @@
       "sources": [
         "database.ts"
       ],
-      "last_updated": "2025-11-16T00:20:07.452985",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:27:59.268746",
+      "last_action": "modify"
     },
     "api/payments.md": {
       "created": "2025-11-15T23:25:55.566674",
@@ -122,16 +123,16 @@
       "sources": [
         "payment-processor.ts"
       ],
-      "last_updated": "2025-11-16T00:19:59.494279",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:27:43.138104",
+      "last_action": "modify"
     },
     "features/data-layer.md": {
       "created": "2025-11-16T00:11:12.614340",
       "sources": [
         "database.ts"
       ],
-      "last_updated": "2025-11-16T00:20:07.453143",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:28:01.987931",
+      "last_action": "modify"
     },
     "features/llm.md": {
       "created": "2025-11-16T00:13:00.842263",
@@ -154,8 +155,8 @@
       "sources": [
         "auth.ts"
       ],
-      "last_updated": "2025-11-16T00:13:24.854707",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:27:33.960502",
+      "last_action": "modify"
     },
     "features/authentication.md": {
       "created": "2025-11-16T00:13:24.854810",
@@ -170,16 +171,16 @@
       "sources": [
         "email-service.ts"
       ],
-      "last_updated": "2025-11-16T00:13:28.629129",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:27:54.033449",
+      "last_action": "append"
     },
     "features/email-service.md": {
       "created": "2025-11-16T00:13:28.629251",
       "sources": [
         "email-service.ts"
       ],
-      "last_updated": "2025-11-16T00:13:28.629255",
-      "last_action": "create"
+      "last_updated": "2025-11-16T00:27:54.033239",
+      "last_action": "modify"
     },
     "modules/data-layer.md": {
       "created": "2025-11-16T00:13:31.208035",

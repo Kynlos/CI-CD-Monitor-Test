@@ -1,3 +1,4 @@
+```markdown
 ---
 title: Database
 layout: default
@@ -13,33 +14,35 @@ layout: default
 > A lightweight, TypeScript‑friendly wrapper that defines a database configuration interface, a `Database` class with async connection helpers, a factory function to create a connected instance, and a simple input‑sanitisation helper.  
 > The implementation is intentionally minimal – the methods are placeholders that you can replace with your own driver logic (e.g. `pg`, `mysql2`, `sqlite3`, etc.).
 
----
-
-## 1. Overview
-
-| Feature | Description |
-|---------|-------------|
-| **Configuration** | `DatabaseConfig` interface describes the connection parameters. |
-| **Connection** | `Database` class encapsulates a connection and exposes `connect()`, `query()`, and `disconnect()` methods. |
-| **Factory** | `createConnection()` creates a `Database` instance and automatically connects it. |
-| **Sanitisation** | `sanitizeInput()` removes potentially dangerous characters from a string. |
+> **Note**: The actual connection logic is omitted in this snippet; in a real implementation you would replace the placeholder comments with a driver such as `pg`, `mysql2`, or `sqlite3`.
 
 ---
 
-## 2. Exports
+## Overview
 
-| Export | Type | Description |
-|--------|------|-------------|
-| `DatabaseConfig` | `interface` | Describes the host, port, database name, username, and password. |
-| `Database` | `class` | Represents a database connection. |
-| `createConnection` | `function` | Async factory that returns a connected `Database`. |
-| `sanitizeInput` | `function` | Utility that strips `'`, `"`, and `;` from a string. |
+`database.ts` provides a lightweight abstraction for connecting to a relational database, executing queries, and safely handling user input.
+
+- **`DatabaseConfig`** – Describes the connection parameters (host, port, database name, username, password).  
+- **`Database`** – A class that manages a single connection lifecycle and exposes `connect()`, `query()`, and `disconnect()` methods.  
+- **`createConnection`** – A convenience async factory that returns a **connected** `Database` instance.  
+- **`sanitizeInput`** – A helper that removes potentially dangerous characters (`'`, `"`, `;`) from strings before they are used in SQL statements.
 
 ---
 
-## 3. Usage Examples
+## 1. Exports
 
-### 3.1 Importing
+| Export            | Type       | Description                                                                 |
+|-------------------|------------|-----------------------------------------------------------------------------|
+| `DatabaseConfig`  | `interface`| Defines the configuration needed to connect to a database.                 |
+| `Database`        | `class`    | Manages a database connection and provides `connect`, `query`, and `disconnect` methods. |
+| `createConnection`| `function`| Async factory that creates **and connects** a `Database` instance.          |
+| `sanitizeInput`   | `function`| Removes single quotes, double quotes, and semicolons from a string.        |
+
+---
+
+## 2. Usage Examples
+
+### 2.1 Importing
 
 ```ts
 import {
@@ -50,44 +53,54 @@ import {
 } from './database';
 ```
 
-### 3.2 Using `DatabaseConfig`
+### 2.2 Defining a Configuration
 
 ```ts
 const config: DatabaseConfig = {
   host: 'localhost',
   port: 5432,
-  database: 'mydb',
-  username: 'user',
-  password: 'pass',
+  database: 'my_app',
+  username: 'app_user',
+  password: 's3cr3t',
 };
 ```
 
-### 3.3 Instantiating `Database` Manually
+### 2.3 Instantiating `Database` Manually
 
 ```ts
 const db = new Database(config);
 
-await db.connect();          // Establish the connection
-const rows = await db.query('SELECT * FROM users WHERE id = $1', [1]);
-console.log(rows);
-await db.disconnect();       // Close the connection
+async function runManual() {
+  await db.connect(); // Open the connection
+
+  const rows = await db.query(
+    'SELECT * FROM users WHERE age > $1',
+    [30]
+  );
+  console.log(rows);
+
+  await db.disconnect(); // Close the connection
+}
+
+runManual().catch(console.error);
 ```
 
-### 3.4 Using `createConnection`
+### 2.4 Using the `createConnection` Factory
 
 ```ts
-async function run() {
+async function runFactory() {
   const db = await createConnection(config); // Already connected
 
-  const rows = await db.query('SELECT * FROM products');
-  console.log(rows);
+  const products = await db.query('SELECT * FROM products');
+  console.log(products);
 
   await db.disconnect(); // Clean up
 }
-run();
+
+runFactory().catch(console.error);
 ```
 
-### 3.5 Sanitising Input
+### 2.5 Sanitising Input
 
 ```ts
 const raw = "O'Reilly; DROP TABLE users; --";
@@ -97,77 +110,20 @@ console.log(safe); // OReilly DROP TABLE users --
 
 ---
 
-## 4. Parameters
+## 3. Parameters
 
-| Function / Method | Parameter | Type | Description |
-|-------------------|-----------|------|-------------|
-| `Database` constructor | `config` | `DatabaseConfig` | Connection configuration. |
-| `connect()` | – | – | No parameters. |
-| `query(sql, params?)` | `sql` | `string` | SQL statement. |
-|  | `params` | `any[]` | Optional array of bind parameters. |
-| `disconnect()` | – | – | No parameters. |
-| `createConnection(config)` | `config` | `DatabaseConfig` | Connection configuration. |
-| `sanitizeInput(input)` | `input` | `string` | Raw user input. |
-
----
-
-## 5. Return Values
-
-| Function / Method | Return Type | Description |
-|-------------------|-------------|-------------|
-| `Database` constructor | `Database` | Instance of the class. |
-| `connect()` | `Promise<void>` | Resolves when the connection is established. |
-| `query(sql, params?)` | `Promise<any[]>` | Resolves to an array of rows (currently an empty array). |
-| `disconnect()` | `Promise<void>` | Resolves when the connection is closed. |
-| `createConnection(config)` | `Promise<Database>` | Resolves to a connected `Database` instance. |
-| `sanitizeInput(input)` | `string` | Returns the sanitized string. |
+| Function / Method          | Parameter | Type               | Description                                   |
+|----------------------------|-----------|--------------------|-----------------------------------------------|
+| `Database` constructor     | `config`  | `DatabaseConfig`   | Connection configuration.                    |
+| `Database.connect()`       | –         | –                  | Opens the database connection.               |
+| `Database.query(sql, params?)`| `sql`   | `string`           | SQL statement to execute.                    |
+|                            | `params`  | `any[]` (optional) | Array of bind parameters for the query.      |
+| `Database.disconnect()`   | –         | –                  | Closes the database connection.              |
+| `createConnection(config)`| `config`  | `DatabaseConfig`   | Configuration used to create & connect the `Database`. |
+| `sanitizeInput(input)`    | `input`   | `string`           | Raw string that may contain unsafe characters. |
+|                            | –         | –                  | Returns a sanitized version of `input`.      |
 
 ---
 
-## 6. Extending the Implementation
-
-The current methods contain placeholder comments. Replace them with real driver logic, e.g.:
-
-```ts
-import { Client } from 'pg';
-
-class Database {
-  private client: Client;
-
-  constructor(private config: DatabaseConfig) {
-    this.client = new Client({
-      host: config.host,
-      port: config.port,
-      database: config.database,
-      user: config.username,
-      password: config.password,
-    });
-  }
-
-  async connect() {
-    await this.client.connect();
-  }
-
-  async query(sql: string, params?: any[]) {
-    const res = await this.client.query(sql, params);
-    return res.rows;
-  }
-
-  async disconnect() {
-    await this.client.end();
-  }
-}
+*Last updated: 2025-11-16*  
 ```
-
----
-
-## 7. Notes
-
-- **Async/Await**: All I/O methods return `Promise`s; use `await` or `.then()`.
-- **Type Safety**: The `query` method returns `any[]`. In a real project, you’d replace `any` with a generic or a typed result set.
-- **Sanitisation**: `sanitizeInput` is very basic. For production use, prefer parameterised queries or a dedicated sanitisation library.
-- **Testing**: The skeleton is ideal for unit tests; you can mock the methods to simulate database behaviour.
-
----
-
-Happy coding! 🚀

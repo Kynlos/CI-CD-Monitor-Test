@@ -1,3 +1,4 @@
+```markdown
 ---
 title: Payment System
 layout: default
@@ -7,34 +8,68 @@ layout: default
 
 *Auto-generated from `./payment-processor.ts`*
 
-# payment‑processor.ts – API Documentation
-
-## Overview
-
-The **Payment Processing Module** is a lightweight, self‑contained TypeScript library that handles the lifecycle of a payment transaction.  
-It exposes:
-
-- **Data contracts** (`PaymentMethod`, `Transaction`) that describe the shape of payment methods and transaction records.
-- **Core operations** for charging a payment method, refunding a completed transaction, and retrieving a user’s transaction history.
-- **Utility helpers** for generating transaction IDs and simulating provider calls (the real implementation would call a payment gateway).
-
-> ⚠️ **Note** – The current implementation uses in‑memory stubs and random success/failure logic. Replace the stubbed helpers (`chargePaymentMethod`, `getTransaction`, `processRefund`) with real provider integrations for production use.
+**Last updated:** 2025-11-16  
 
 ---
 
-## Exports
+## Overview  
 
-| Export | Type | Description |
-|--------|------|-------------|
-| `PaymentMethod` | **interface** | Describes a stored payment method. |
-| `Transaction` | **interface** | Represents a payment transaction record. |
-| `processPayment` | **function** | Charges a payment method and returns a `Transaction`. |
-| `refundTransaction` | **function** | Refunds a completed transaction and returns the updated record. |
-| `getUserTransactions` | **function** | Retrieves all transactions for a given user. |
+The **Payment Processor** module provides a lightweight abstraction for handling payment transactions and refunds. It supports three payment method types (`card`, `bank`, `paypal`) and exposes a simple API to:
+
+1. **Process a payment** – create a transaction, charge the payment method, and return the transaction status.  
+2. **Refund a transaction** – reverse a completed transaction and mark it as refunded.  
+3. **Retrieve a user’s transaction history** – fetch all transactions for a specific user.  
+
+The implementation is intentionally minimal and uses in‑memory helpers to simulate database and external provider interactions. It is ideal for quick prototypes, test harnesses, or as a starting point before integrating real payment‑gateway SDKs.
+
+> ⚠️ **Note** – The current implementation uses random success/failure logic and in‑memory storage. Replace the stubbed helpers (`chargePaymentMethod`, `getTransaction`, `processRefund`) with real provider integrations for production use.
 
 ---
 
-## Usage Examples
+## Exports  
+
+| Export               | Type        | Description                                            |
+|----------------------|-------------|--------------------------------------------------------|
+| `PaymentMethod`      | **interface** | Describes a payment instrument.                        |
+| `Transaction`        | **interface** | Represents a payment transaction record.               |
+| `processPayment`     | **function** | Initiates a payment and returns a `Transaction`.       |
+| `refundTransaction`  | **function** | Refunds a completed transaction and returns the updated record. |
+| `getUserTransactions`| **function** | Retrieves all transactions belonging to a user.        |
+
+---
+
+## Interfaces  
+
+### `PaymentMethod`
+
+```ts
+export interface PaymentMethod {
+  id: string;                         // Unique identifier for the method
+  type: 'card' | 'bank' | 'paypal';    // Method type
+  last4: string;                      // Last four digits of the card/account
+  expiryDate?: string;                // Optional expiry date (MM/YY)
+}
+```
+
+### `Transaction`
+
+```ts
+export interface Transaction {
+  id: string;                         // Unique transaction ID
+  amount: number;                     // Amount in cents
+  currency: string;                   // ISO currency code (currently hard‑coded to 'USD')
+  status: 'pending' |
+          'succeeded' |
+          'failed' |
+          'refunded';                // Current state of the transaction
+  createdAt: Date;                    // Timestamp when the transaction was created
+  // Additional fields can be added as needed (e.g., userId, paymentMethodId)
+}
+```
+
+---
+
+## Usage Examples  
 
 > **Prerequisites** – Install the module (or copy the file) and import the functions:
 
@@ -48,7 +83,7 @@ import {
 } from './payment-processor';
 ```
 
-### 1. Charging a Payment Method
+### 1. Charging a Payment Method  
 
 ```ts
 const card: PaymentMethod = {
@@ -69,7 +104,7 @@ async function charge() {
 charge();
 ```
 
-### 2. Refunding a Transaction
+### 2. Refunding a Transaction  
 
 ```ts
 async function refund() {
@@ -83,7 +118,7 @@ async function refund() {
 refund();
 ```
 
-### 3. Fetching a User’s Transaction History
+### 3. Fetching a User’s Transaction History  
 
 ```ts
 async function listTransactions() {
@@ -96,64 +131,13 @@ listTransactions();
 
 ---
 
-## Parameters
+## Parameters  
 
-| Function | Parameter | Type | Description |
-|----------|-----------|------|-------------|
-| `processPayment` | `amount` | `number` | Amount to charge **in cents** (e.g., `5000` = $50.00). |
-| | `method` | `PaymentMethod` | The payment method to use for the charge. |
-| `refundTransaction` | `transactionId` | `string` | The ID of the transaction to refund. |
-| `getUserTransactions` | `userId` | `string` | The user’s unique identifier. |
+| Function            | Parameter   | Type            | Description                                            |
+|---------------------|-------------|-----------------|--------------------------------------------------------|
+| `processPayment`    | `amount`    | `number`        | Amount to charge **in cents** (e.g., `5000` = $50.00). |
+|                     | `method`    | `PaymentMethod` | The payment method to use for the charge.             |
+| `refundTransaction` | `transactionId` | `string`   | Identifier of the transaction to be refunded.          |
+| `getUserTransactions`| `userId`   | `string`        | Identifier of the user whose transactions are requested.|
 
----
-
-## Return Values
-
-| Function | Return Type | Description |
-|----------|-------------|-------------|
-| `processPayment` | `Promise<Transaction>` | Resolves to a `Transaction` object whose `status` is `'completed'` or `'failed'`. |
-| `refundTransaction` | `Promise<Transaction>` | Resolves to the original transaction object with `status` set to `'failed'` (used to indicate a refunded state) and an updated `timestamp`. |
-| `getUserTransactions` | `Promise<Transaction[]>` | Resolves to an array of `Transaction` objects belonging to the specified user. Currently returns an empty array – replace with a real DB query. |
-
----
-
-## Data Contracts
-
-### `PaymentMethod`
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `id` | `string` | ✅ | Unique identifier for the payment method. |
-| `type` | `'card' | 'bank' | 'paypal'` | ✅ | The method’s type. |
-| `last4` | `string` | ✅ | Last four digits of the card or account number. |
-| `expiryDate` | `string` | ❌ | Expiration date in `MM/YY` format (applicable to cards). |
-
-### `Transaction`
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `id` | `string` | ✅ | Unique transaction identifier. |
-| `amount` | `number` | ✅ | Amount in cents. |
-| `currency` | `string` | ✅ | ISO‑4217 currency code (currently hard‑coded to `'USD'`). |
-| `status` | `'pending' | 'completed' | 'failed'` | ✅ | Current state of the transaction. |
-| `timestamp` | `Date` | ✅ | When the transaction was created or last updated. |
-| `paymentMethod` | `PaymentMethod` | ✅ | The payment method used. |
-
----
-
-## Extending the Module
-
-1. **Persist Transactions** – Replace the stubbed `getTransaction` and `getUserTransactions` with real database queries (e.g., PostgreSQL, MongoDB).  
-2. **Real Payment Provider** – Swap out `chargePaymentMethod` and `processRefund` with SDK calls to Stripe, PayPal, Braintree, etc.  
-3. **Error Handling** – Wrap provider errors in custom error classes (`PaymentError`, `RefundError`) for richer context.  
-4. **Unit Tests** – Add Jest or Vitest tests that mock the provider functions to verify business logic.
-
----
-
-## Summary
-
-- **`processPayment`**: Charge a payment method, returning a transaction record.  
-- **`refundTransaction`**: Refund a completed transaction, marking it as failed.  
-- **`getUserTransactions`**: Retrieve all transactions for a user.  
-
-Use the provided interfaces to type your own payment method storage and transaction history. Replace the stubbed helpers with real integrations to move from a demo to a production‑ready payment system.
+```

@@ -1,34 +1,79 @@
+```markdown
 ---
 title: Payment Processor
 layout: default
+last_updated: 2025-11-16
 ---
 
 # payment-processor.ts
 
 *Auto-generated from `./payment-processor.ts`*
 
-# payment‑processor.ts – API Documentation
+# Payment Processor Module  
+**File:** `payment-processor.ts`
 
-## Overview
-`payment-processor.ts` is a lightweight payment‑processing module that handles:
+---
 
-- **Creating** a payment transaction (`processPayment`)
-- **Refunding** a completed transaction (`refundTransaction`)
-- **Retrieving** all transactions for a specific user (`getUserTransactions`)
+## Overview  
+The **Payment Processor** module provides a lightweight abstraction for handling payment transactions and refunds. It supports three payment‑method types (`card`, `bank`, `paypal`) and exposes a simple API to:
 
-It exposes two data contracts (`PaymentMethod`, `Transaction`) and three async functions that return `Promise`s. The module is intentionally simple – it simulates external payment‑provider calls and database interactions, making it ideal for prototyping or unit‑testing.
+1. **Process a payment** – create a transaction, charge the payment method, and return the transaction status.  
+2. **Refund a transaction** – reverse a completed transaction and mark it as refunded.  
+3. **Retrieve a user’s transaction history** – fetch all transactions for a specific user.  
+
+The module is intentionally minimal and uses in‑memory helpers to simulate database and external‑provider interactions. It can be dropped into any TypeScript project that needs a quick payment‑processing prototype or a test harness.
 
 ---
 
 ## Exports
 
-| Export | Type | Description |
-|--------|------|-------------|
-| `PaymentMethod` | `interface` | Describes a payment instrument. |
-| `Transaction` | `interface` | Represents a payment transaction record. |
-| `processPayment` | `function` | Creates a new transaction and attempts to charge the specified payment method. |
-| `refundTransaction` | `function` | Refunds a completed transaction. |
-| `getUserTransactions` | `function` | Retrieves all transactions belonging to a user. |
+| Export               | Type      | Description                                                            |
+|----------------------|-----------|------------------------------------------------------------------------|
+| `PaymentMethod`      | interface | Describes a payment instrument.                                        |
+| `Transaction`        | interface | Represents a payment transaction record.                               |
+| `processPayment`     | function  | Initiates a payment and returns a `Transaction`.                       |
+| `refundTransaction`  | function  | Refunds a completed transaction and returns the updated record.       |
+| `getUserTransactions`| function  | Retrieves all transactions belonging to a user.                        |
+
+---
+
+## Interfaces
+
+### `PaymentMethod`
+```ts
+export interface PaymentMethod {
+  /** Unique identifier for the method */
+  id: string;
+  /** Method type */
+  type: 'card' | 'bank' | 'paypal';
+  /** Last four digits of the card/account */
+  last4: string;
+  /** Optional expiry date (MM/YY) */
+  expiryDate?: string;
+}
+```
+
+### `Transaction`
+```ts
+export interface Transaction {
+  /** Unique transaction ID */
+  id: string;
+  /** Amount in cents (e.g., 5000 = $50.00) */
+  amount: number;
+  /** ISO currency code – currently hard‑coded to 'USD' */
+  currency: string;
+  /** Current status of the transaction */
+  status: 'pending' | 'succeeded' | 'failed' | 'refunded';
+  /** Identifier of the payment method used */
+  methodId: string;
+  /** Identifier of the user who owns the transaction */
+  userId: string;
+  /** Timestamp when the transaction was created */
+  createdAt: Date;
+  /** Timestamp of the last update (e.g., after a refund) */
+  updatedAt: Date;
+}
+```
 
 ---
 
@@ -88,63 +133,36 @@ async function listUserTxs() {
 
 ## Parameters
 
-| Function | Parameter | Type | Description |
-|----------|-----------|------|-------------|
-| `processPayment` | `amount` | `number` | Amount to charge **in cents** (e.g., `5000` = $50.00). Must be > 0. |
-| | `method` | `PaymentMethod` | The payment instrument to use. |
-| `refundTransaction` | `transactionId` | `string` | Identifier of the transaction to refund. |
-| `getUserTransactions` | `userId` | `string` | Identifier of the user whose transactions are requested. |
+| Function               | Parameter      | Type            | Description                                                            |
+|------------------------|----------------|-----------------|------------------------------------------------------------------------|
+| `processPayment`       | `amount`       | `number`        | Amount to charge **in cents** (e.g., `5000` = $50.00). Must be > 0.    |
+|                        | `method`       | `PaymentMethod` | The payment instrument to use.                                         |
+| `refundTransaction`    | `transactionId`| `string`        | Identifier of the transaction to refund.                               |
+| `getUserTransactions`  | `userId`       | `string`        | Identifier of the user whose transactions are requested.              |
 
 ### `PaymentMethod` fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | Unique identifier for the payment method. |
-| `type` | `'card' | 'bank' | 'paypal'` | The method category. |
-| `last4` | `string` | Last four digits of the card or account. |
-| `expiryDate` | `string` (optional) | Expiry in `MM/YYYY` format (cards only). |
+| Field       | Type                                 | Description                              |
+|-------------|--------------------------------------|------------------------------------------|
+| `id`        | `string`                             | Unique identifier for the payment method.|
+| `type`      | `'card' \| 'bank' \| 'paypal'`       | Type of payment method.                  |
+| `last4`     | `string`                             | Last four digits of the card/account.    |
+| `expiryDate`| `string` (optional)                  | Expiry date in `MM/YY` format.           |
 
 ### `Transaction` fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | Unique transaction identifier. |
-| `amount` | `number` | Amount in cents. |
-| `currency` | `string` | ISO‑4217 currency code (currently always `'USD'`). |
-| `status` | `'pending' | 'completed' | 'failed'` | Current state of the transaction. |
-| `timestamp` | `Date` | When the transaction was created or last updated. |
-| `paymentMethod` | `PaymentMethod` | The method used for this transaction. |
+| Field       | Type                                 | Description                                          |
+|-------------|--------------------------------------|------------------------------------------------------|
+| `id`        | `string`                             | Unique transaction ID.                               |
+| `amount`    | `number`                             | Amount in cents.                                     |
+| `currency`  | `string`                             | ISO currency code (e.g., `'USD'`).                  |
+| `status`    | `'pending' \| 'succeeded' \| 'failed' \| 'refunded'` | Current status of the transaction. |
+| `methodId`  | `string`                             | ID of the `PaymentMethod` used.                      |
+| `userId`    | `string`                             | Owner of the transaction.                            |
+| `createdAt` | `Date`                               | When the transaction was created.                    |
+| `updatedAt` | `Date`                               | Last update timestamp (e.g., after a refund).       |
 
----
+--- 
 
-## Return Values
-
-| Function | Return Type | Description |
-|----------|-------------|-------------|
-| `processPayment` | `Promise<Transaction>` | Resolves with the created transaction. `status` is `'completed'` on success, `'failed'` otherwise. |
-| `refundTransaction` | `Promise<Transaction>` | Resolves with the updated transaction. The returned transaction has `status: 'failed'` to indicate it has been refunded. |
-| `getUserTransactions` | `Promise<Transaction[]>` | Resolves with an array of all transactions for the given user. (Currently returns an empty array – replace with real DB logic.) |
-
----
-
-## Error Handling
-
-| Function | Condition | Error Message |
-|----------|-----------|---------------|
-| `processPayment` | `amount <= 0` | `'Amount must be positive'` |
-| `refundTransaction` | `transaction.status !== 'completed'` | `'Can only refund completed transactions'` |
-| `getTransaction` (internal) | Not implemented | `'Not implemented'` |
-
-All errors are thrown as plain `Error` objects. Wrap calls in `try/catch` or use `.catch()` to handle them.
-
----
-
-## Extending the Module
-
-- **Persisting Transactions** – Replace the stubbed `getTransaction` and `getUserTransactions` with real database queries.
-- **Real Payment Provider** – Swap out `chargePaymentMethod` and `processRefund` with SDK calls to Stripe, PayPal, etc.
-- **Currency Support** – Add a `currency` parameter to `processPayment` and adjust the `Transaction` interface accordingly.
-
----
-
-Happy coding! 🚀
+*Generated on 2025‑11‑16.*
+```
